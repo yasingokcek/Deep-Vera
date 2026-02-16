@@ -47,10 +47,11 @@ export const extractLeadList = async (
       contents: isUrl 
         ? `GÖREV: Şu fuar/etkinlik sitesini analiz et: "${queryContext}". 
            Bu sayfadaki tüm katılımcı (exhibitor) veya sergileyici firma isimlerini bul.
+           Perakende (retail) sektöründeki firmalara öncelik ver.
            Eğer sayfa doğrudan liste içermiyorsa, Google Search kullanarak bu sitenin 'katılımcı listesi' sayfasını bul ve oradaki isimleri getir.
            Her şirket için tam isim ve varsa web sitesi URL'sini çıkar.
            Hedef: ${limit} adet şirket.`
-        : `GÖREV: "${location}" bölgesindeki "${sector}" sektöründe faaliyet gösteren ${limit} adet büyük ölçekli şirket bul. 
+        : `GÖREV: "${location}" bölgesindeki "${sector}" sektöründe (özellikle PERAKENDE ağırlıklı) faaliyet gösteren ${limit} adet aktif şirket bul. 
            EK BAĞLAM: ${queryContext}
            ŞU İSİMLERİ ATLA: ${excludeNames.slice(-10).join(", ")}`,
       config: {
@@ -103,20 +104,19 @@ export const findCompanyIntel = async (
 
       GÖREV: 
       1. Bu şirketin kurumsal iletişim bilgilerini (E-posta, Tel) bul.
-      2. Şirketin SOSYAL MEDYA profillerini (LinkedIn, Instagram, Twitter/X) MUTLAKA bul ve URL olarak getir. Sosyal medya verileri bu operasyon için kritiktir.
-      3. Kişiselleştirilmiş, ikna edici ve profesyonel bir B2B e-posta taslağı hazırla.
+      2. Şirketin SOSYAL MEDYA profillerini (LinkedIn, Instagram, Twitter/X) bul. LinkedIn Şirket sayfası, Instagram işletme sayfası ve X profili için tam URL getir.
+      3. Perakende odaklı, kişiselleştirilmiş, ikna edici bir B2B e-posta taslağı hazırla.
 
-      SOSYAL MEDYA PROTOKOLÜ: 
-      - LinkedIn, Instagram ve X (Twitter) profillerini araştır.
-      - Sadece şirkete ait resmi hesapları al.
-      - Linkleri tam URL (https://...) formatında ver.
+      SOSYAL MEDYA KRİTERLERİ: 
+      - linkedin: linkedin.com/company/... formatında.
+      - instagram: instagram.com/... formatında.
+      - twitter: twitter.com/... formatında.
 
-      E-POSTA YAZIM KURALLARI (ZORUNLU):
-      - Yapı: E-posta metni en az 3 paragraftan oluşmalıdır.
-      - Ton: Kurumsal, saygılı ve akıcı bir Türkçe kullan. Normal tümce düzenine sadık kal.
-      - Paragraf 1: Etkileyici bir giriş (Buzkıran). Şirketin sektördeki önemine değin.
-      - Paragraf 2: Çözüm odaklı değer önerisi. Kendi hizmetlerini onların ihtiyaçlarıyla eşleştir.
-      - Paragraf 3: Net bir eylem çağrısı (Toplantı veya katalog talebi).
+      E-POSTA YAZIM KURALLARI:
+      - Ton: Kurumsal ve profesyonel Türkçe.
+      - Paragraf 1: Etkileyici ve sektörel bir giriş.
+      - Paragraf 2: Değer önerisi (Perakende verimliliği odaklı).
+      - Paragraf 3: Eylem çağrısı.
       - İmza öncesine [COMPANY_LOGO] etiketini yerleştir.`,
       config: { 
         tools: [{ googleSearch: {} }],

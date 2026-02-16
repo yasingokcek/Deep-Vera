@@ -22,10 +22,10 @@ const DataTable: React.FC<Props> = ({ participants, onSelectParticipant, onClear
   if (participants.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-center p-20 opacity-30">
-        <div className="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-4xl mb-8 shadow-inner border border-slate-100">📡</div>
-        <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-2">İstihbarat Bekleniyor</h3>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] max-w-sm">
-          Taramayı başlatmak için arama kutusuna bir URL veya sektör girin.
+        <div className="w-20 h-20 bg-white rounded-[2rem] flex items-center justify-center text-3xl mb-6 shadow-2xl border border-slate-100">🔭</div>
+        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter mb-2">İstihbarat Bekleniyor</h3>
+        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">
+          Yapay zeka analizini başlatmak için bir hedef girin.
         </p>
       </div>
     );
@@ -33,67 +33,69 @@ const DataTable: React.FC<Props> = ({ participants, onSelectParticipant, onClear
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 shrink-0">
-        <div className="flex items-center gap-4">
-           <div className="w-1.5 h-6 bg-blue-600 rounded-full"></div>
+      <div className="flex items-center justify-between mb-4 shrink-0">
+        <div className="flex items-center gap-3">
+           <div className="w-0.5 h-5 bg-blue-600 rounded-full"></div>
            <div>
-             <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight leading-none">İstihbarat Havuzu</h3>
-             <div className="flex items-center gap-2 mt-1">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{participants.length} Aktif Fırsat</span>
-             </div>
+             <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight leading-none">İstihbarat Havuzu</h3>
+             <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest mt-1 block">{participants.length} Aktif Varlık</span>
            </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button onClick={onExport} className="h-9 px-4 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all shadow-sm">📊 Raporla</button>
-          <button onClick={onClear} className="h-9 px-4 bg-white text-slate-400 border border-slate-100 rounded-lg text-[9px] font-black uppercase tracking-widest hover:border-red-200 hover:text-red-500 transition-all shadow-sm">🗑️ Sıfırla</button>
+        <div className="flex items-center gap-2">
+          <button onClick={onExport} className="h-8 px-4 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all">DIŞA AKTAR</button>
+          <button onClick={onClear} className="h-8 px-4 bg-white text-slate-400 border border-slate-100 rounded-lg text-[8px] font-black uppercase tracking-widest hover:text-red-500 transition-all">TEMİZLE</button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-24">
+      <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 pb-24">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {participants.map((p) => (
             <div 
               key={p.id} 
               onClick={() => handleRowClick(p)}
-              className={`group relative bg-white border rounded-2xl transition-all duration-300 cursor-pointer overflow-hidden ${
+              className={`group relative bg-white border rounded-[1.5rem] transition-all duration-300 cursor-pointer overflow-hidden ${
                 activeId === p.id 
-                ? 'border-blue-600 ring-4 ring-blue-50 shadow-xl shadow-blue-100/30 translate-y-[-2px]' 
-                : 'border-slate-100 hover:border-blue-200 hover:shadow-lg hover:shadow-slate-100/50 hover:translate-y-[-1px]'
+                ? 'border-blue-600 ring-4 ring-blue-50 shadow-2xl translate-y-[-2px]' 
+                : 'border-slate-100 hover:border-blue-200 hover:shadow-lg hover:translate-y-[-1px]'
               }`}
             >
               <div className="p-5">
                 <div className="flex items-start gap-4 mb-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-black shrink-0 transition-all duration-500 ${
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black shrink-0 transition-all duration-500 ${
                     activeId === p.id ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-900 text-white'
                   }`}>
                     {p.name.charAt(0)}
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h4 className={`text-sm font-black tracking-tight truncate transition-colors mb-1 ${activeId === p.id ? 'text-blue-600' : 'text-slate-900'}`}>{p.name}</h4>
-                    <div className="flex flex-col gap-1">
-                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter truncate">📍 {p.location || 'Bilinmiyor'}</span>
-                       <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest">{p.industry || 'Potansiyel'}</span>
+                    <h4 className={`text-[11px] font-black tracking-tight truncate transition-colors mb-0.5 uppercase ${activeId === p.id ? 'text-blue-600' : 'text-slate-900'}`}>{p.name}</h4>
+                    <div className="flex flex-col gap-0.5">
+                       <span className="text-[8px] font-bold text-slate-400 truncate">📍 {p.location || 'Konum Analizi...'}</span>
+                       <span className="text-[7px] font-black text-blue-500 uppercase tracking-widest">{p.industry || 'Genel'}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Social Media Presence Indicators */}
-                <div className="flex items-center gap-2 mb-4">
-                  <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black transition-all ${p.linkedin ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-300'}`}>L</div>
-                  <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black transition-all ${p.instagram ? 'bg-pink-600 text-white shadow-sm' : 'bg-slate-100 text-slate-300'}`}>I</div>
-                  <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black transition-all ${p.twitter ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-300'}`}>X</div>
+                {/* Social Badges */}
+                <div className="flex items-center gap-1.5 mb-4">
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[7px] font-black transition-all ${p.linkedin ? 'bg-[#0077B5] text-white' : 'bg-slate-50 text-slate-200'}`}>LI</div>
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[7px] font-black transition-all ${p.instagram ? 'bg-[#E4405F] text-white' : 'bg-slate-50 text-slate-200'}`}>IG</div>
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[7px] font-black transition-all ${p.twitter ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-200'}`}>X</div>
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-slate-50 mt-4">
+                <div className="flex items-center justify-between pt-4 border-t border-slate-50">
                   {p.status === 'completed' ? (
-                     <span className="text-[8px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Analiz Tamam</span>
+                     <div className="flex items-center gap-1">
+                        <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
+                        <span className="text-[7px] font-black uppercase text-emerald-600">Veri Aktif</span>
+                     </div>
+                  ) : p.status === 'failed' ? (
+                     <span className="text-[7px] font-black uppercase text-red-500">Hata</span>
                   ) : (
-                     <span className="text-[8px] font-black uppercase text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full animate-pulse">İşleniyor...</span>
+                     <span className="text-[7px] font-black uppercase text-blue-400 animate-pulse">Tarama...</span>
                   )}
                   {p.website && (
-                    <div className="text-[9px] font-bold text-slate-300 group-hover:text-blue-600 transition-colors truncate max-w-[100px]">
+                    <div className="text-[8px] font-bold text-slate-300 group-hover:text-blue-600 transition-colors truncate max-w-[100px]">
                       {p.website.replace(/^https?:\/\/(www\.)?/, '')}
                     </div>
                   )}
