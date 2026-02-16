@@ -100,42 +100,21 @@ const App: React.FC = () => {
       return;
     }
     
-    // Header columns
-    const headers = ["Şirket Adı", "Web Sitesi", "E-posta", "Telefon", "Sektör", "Konum", "LinkedIn", "Instagram", "X (Twitter)", "Buzkıran Cümlesi", "E-posta Konusu", "E-posta Taslağı"];
-    
-    // Map participants to rows
+    const headers = ["Şirket Adı", "Web Sitesi", "E-posta", "Telefon", "Sektör", "Konum", "LinkedIn", "Instagram", "X", "Buzkıran", "Konu", "Mesaj"];
     const rows = participants.map(p => [
-      p.name, 
-      p.website, 
-      p.email, 
-      p.phone, 
-      p.industry, 
-      p.location, 
-      p.linkedin || '', 
-      p.instagram || '', 
-      p.twitter || '', 
-      p.icebreaker || '', 
-      p.emailSubject || '', 
-      (p.emailDraft || '').replace(/\n/g, ' [P] ') // Replace newlines with a placeholder for better Excel compatibility
+      p.name, p.website, p.email, p.phone, p.industry, p.location, p.linkedin || '', p.instagram || '', p.twitter || '', p.icebreaker || '', p.emailSubject || '', (p.emailDraft || '').replace(/\n/g, ' [P] ')
     ]);
     
-    // Combine headers and rows with semicolon (better for Turkish Excel versions)
-    const csvContent = [
-      headers.join(";"),
-      ...rows.map(row => row.map(cell => `"${(cell || "").toString().replace(/"/g, '""')}"`).join(";"))
-    ].join("\n");
-    
-    // Byte Order Mark (BOM) for UTF-8 Excel support
+    const csvContent = [headers.join(";"), ...rows.map(row => row.map(cell => `"${(cell || "").toString().replace(/"/g, '""')}"`).join(";"))].join("\n");
     const BOM = "\uFEFF";
     const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `DeepVera_Istihbarat_Raporu_${new Date().toLocaleDateString('tr-TR').replace(/\./g, '-')}.csv`);
+    link.setAttribute("download", `DeepVera_Rapor_${new Date().getTime()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   };
 
   const startAnalysis = async () => {
@@ -252,8 +231,7 @@ const App: React.FC = () => {
                 />
               </div>
 
-              {/* ARA SAYISI (LEAD LIMIT) ALANI - GERİ EKLENDİ VE BELİRGİNLEŞTİRİLDİ */}
-              <div className="flex flex-col items-center justify-center px-3 bg-slate-50 rounded-xl border border-slate-200 h-11 min-w-[80px] shadow-inner group hover:border-blue-300 transition-colors">
+              <div className="flex flex-col items-center justify-center px-3 bg-slate-50 rounded-xl border border-slate-200 h-11 min-w-[70px] shadow-inner group">
                 <span className="text-[7px] font-black text-slate-400 uppercase mb-0.5 tracking-widest">ADET</span>
                 <input 
                   type="number"
@@ -287,18 +265,37 @@ const App: React.FC = () => {
           </header>
           
           <main className="flex-1 flex flex-col overflow-hidden">
+            {/* ARAMA SÜRECİ ÜST BARI - GELİŞMİŞ VERSİYON */}
             {status !== AppStatus.IDLE && (
-              <div className="bg-[#00D1FF] px-8 py-2 flex justify-between items-center shadow-[0_0_20px_rgba(0,209,255,0.3)] z-[55] border-b border-white/20">
-                <div className="flex items-center gap-3">
-                  <div className="flex gap-1">
-                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-ping"></div>
+              <div className="bg-[#00D1FF] px-8 py-3 flex justify-between items-center shadow-[0_10px_30px_rgba(0,209,255,0.2)] z-[55] border-b border-white/20 relative overflow-hidden">
+                <div className="absolute inset-0 scan-line opacity-30 pointer-events-none"></div>
+                <div className="flex items-center gap-4 relative z-10">
+                  <div className="flex gap-1.5">
+                    <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
+                    <div className="w-2 h-2 bg-white/40 rounded-full"></div>
                   </div>
-                  <span className="text-[9px] font-black text-white uppercase tracking-[0.3em] drop-shadow-md">Küresel İstihbarat Aktif</span>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black text-white uppercase tracking-[0.3em] drop-shadow-md">Nöral İstihbarat Aktif</span>
+                    <span className="text-[7px] font-bold text-white/70 uppercase tracking-widest mt-0.5">Global Veri Madenciliği Yürütülüyor</span>
+                  </div>
                 </div>
-                <div className="flex-1 max-w-lg mx-8 h-1 bg-white/30 rounded-full overflow-hidden">
-                  <div className="h-full bg-white shadow-[0_0_8px_white] transition-all duration-500" style={{ width: `${(participants.filter(p => p.status === 'completed').length / (leadLimit || 1)) * 100}%` }}></div>
+                
+                <div className="flex-1 max-w-xl mx-12 flex flex-col gap-2 relative z-10">
+                  <div className="w-full h-1.5 bg-white/30 rounded-full overflow-hidden">
+                    <div className="h-full bg-white shadow-[0_0_15px_white] transition-all duration-700 ease-out" style={{ width: `${(participants.filter(p => p.status === 'completed').length / (leadLimit || 1)) * 100}%` }}></div>
+                  </div>
+                  <div className="flex justify-between items-center px-1">
+                    <span className="text-[8px] font-black text-white uppercase tracking-widest">{logs[0]}</span>
+                    <span className="text-[8px] font-black text-white uppercase tracking-widest">%{Math.round((participants.filter(p => p.status === 'completed').length / (leadLimit || 1)) * 100)} Tamamlandı</span>
+                  </div>
                 </div>
-                <span className="text-[8px] font-black text-white uppercase tracking-widest animate-pulse drop-shadow-sm">{logs[0]}</span>
+
+                <div className="flex items-center gap-4 relative z-10">
+                   <div className="flex flex-col items-end">
+                      <span className="text-[10px] font-black text-white uppercase tracking-widest">{participants.filter(p => p.status === 'completed').length} / {leadLimit}</span>
+                      <span className="text-[7px] font-bold text-white/50 uppercase tracking-widest">BULUNAN LİSTE</span>
+                   </div>
+                </div>
               </div>
             )}
 

@@ -105,14 +105,14 @@ export const findCompanyIntel = async (
       1. Bu şirketin kurumsal iletişim bilgilerini (E-posta, Tel) ve sosyal medya linklerini bul.
       2. Kişiselleştirilmiş, ikna edici ve profesyonel bir B2B e-posta taslağı hazırla.
 
-      E-POSTA YAZIM KURALLARI:
-      - Ton: Kurumsal, ciddi ama samimi.
-      - Yapı: Metin mutlaka 3 ana paragraftan oluşmalıdır. Paragraflar arasında çift satır boşluk bırak.
-      - 1. Paragraf: Buzkıran (Icebreaker). Şirketin son başarılarına veya sektördeki konumuna nazik bir atıfta bulunarak başla.
-      - 2. Paragraf: Değer Önerisi. Göndericinin hizmetlerinin hedef şirketin hangi problemini çözeceğini açıkla.
-      - 3. Paragraf: Kapanış ve Aksiyon Çağrısı (CTA). Kısa bir tanışma toplantısı veya demo önerisinde bulun.
-      - Dil: Akıcı ve hatasız Türkçe. Normal tümce düzenine (Özne-Tümleç-Yüklem) ve imla kurallarına tam uyulmalıdır.
-      - İmzadan önce mutlaka [COMPANY_LOGO] etiketini yerleştir.`,
+      E-POSTA YAZIM KURALLARI (ZORUNLU):
+      - Yapı: E-posta metni en az 3 paragraftan oluşmalıdır.
+      - Ton: Kurumsal, saygılı ve akıcı bir Türkçe kullan. Normal tümce düzenine sadık kal.
+      - Paragraf 1: Etkileyici bir giriş (Buzkıran). Şirketin sektördeki önemine değin.
+      - Paragraf 2: Çözüm odaklı değer önerisi. Kendi hizmetlerini onların ihtiyaçlarıyla eşleştir.
+      - Paragraf 3: Net bir eylem çağrısı (Toplantı veya katalog talebi).
+      - İmza öncesine [COMPANY_LOGO] etiketini yerleştir.
+      - Tümce Düzeni: Cümleler devrik olmamalı, paragraf geçişleri mantıklı olmalıdır.`,
       config: { 
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
