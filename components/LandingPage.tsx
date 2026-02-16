@@ -99,20 +99,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
         </div>
       </header>
 
-      {/* Marquee */}
-      <div className="bg-slate-900 py-10 overflow-hidden relative border-y border-white/5">
-         <div className="flex animate-marquee whitespace-nowrap gap-20 items-center">
-            {[1,2,3,4,5].map(i => (
-              <div key={i} className="flex items-center gap-10">
-                <span className="text-white/20 font-black text-3xl uppercase tracking-tighter">250M+ Kurumsal Veri</span>
-                <span className="text-blue-500 font-black text-3xl uppercase tracking-tighter">Gerçek Zamanlı Arama</span>
-                <span className="text-white/20 font-black text-3xl uppercase tracking-tighter">AI Soğuk Erişim</span>
-                <span className="text-emerald-500 font-black text-3xl uppercase tracking-tighter">%98 Doğrulama Oranı</span>
-              </div>
-            ))}
-         </div>
-      </div>
-
       {/* How It Works Section */}
       <section id="how-it-works" className="py-32 bg-slate-50/50 relative">
         <div className="container mx-auto px-6 lg:px-12">
@@ -166,43 +152,106 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                           <p className="text-slate-500 text-sm font-medium">Rakipleri analiz ederek satış stratejinizi otomatik olarak optimize eder.</p>
                        </div>
                     </div>
-                    <div className="flex gap-6 group cursor-default">
-                       <div className="w-12 h-12 bg-slate-900 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-xl group-hover:bg-blue-600 transition-colors">🚀</div>
-                       <div>
-                          <h4 className="text-lg font-black uppercase tracking-tight mb-2 group-hover:text-blue-600 transition-colors">Otonom Pilot</h4>
-                          <p className="text-slate-500 text-sm font-medium">Potansiyel müşterileri CRM veya e-posta sisteminizle otomatik senkronize etmek için Webhook desteği.</p>
-                       </div>
-                    </div>
                  </div>
               </div>
+
+              {/* Enhanced Visual Section */}
               <div className="relative group">
                  <div className="absolute -inset-20 bg-blue-600/10 blur-[120px] rounded-full group-hover:bg-blue-600/20 transition-all duration-1000"></div>
-                 <div className="relative bg-[#0a0c10] rounded-[4rem] p-8 lg:p-12 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden min-h-[620px] flex flex-col text-left text-white">
-                    <div className="relative z-10 flex justify-between items-center mb-10">
-                       <div className="flex gap-2">
-                          <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
-                          <div className="w-3 h-3 rounded-full bg-amber-500/50"></div>
-                          <div className="w-3 h-3 rounded-full bg-emerald-500/50"></div>
+                 
+                 <div className="relative bg-[#0a0c10] rounded-[3rem] p-6 lg:p-10 shadow-2xl border border-white/10 overflow-hidden min-h-[700px] flex flex-col text-left text-white">
+                    {/* Neural Header HUD */}
+                    <div className="relative z-20 flex justify-between items-center mb-8">
+                       <div className="flex items-center gap-4">
+                          <div className="flex gap-1">
+                             {[1,2,3].map(i => <div key={i} className="w-1 h-3 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: `${i*0.2}s`}}></div>)}
+                          </div>
+                          <span className="text-[8px] font-black text-blue-400 uppercase tracking-widest">Nöral Sistem Aktif</span>
                        </div>
-                       <div className="px-4 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-full">
-                          <span className="text-[8px] font-black text-blue-400 uppercase tracking-[0.3em] animate-pulse">Nöral Sistem Aktif</span>
+                       <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[6px] font-black uppercase tracking-widest text-white/40">
+                          Mode: Deep Context Alpha
                        </div>
                     </div>
-                    <div className="relative z-20 bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-8 shadow-2xl">
-                       <div className="flex items-center gap-6 mb-8">
-                          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-2xl">🏢</div>
-                          <div className="space-y-2">
-                             <div className="h-4 w-48 bg-white/20 rounded-full"></div>
-                             <div className="h-2 w-32 bg-white/10 rounded-full"></div>
+
+                    {/* The Visual Representation of "How it Works" */}
+                    <div className="flex-1 relative">
+                       {/* Background Connection Lines */}
+                       <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 400 600">
+                          <path d="M 50 100 Q 200 150 350 100" stroke="#2563eb" fill="none" strokeWidth="0.5" className="animate-pulse" />
+                          <path d="M 50 300 Q 200 250 350 300" stroke="#2563eb" fill="none" strokeWidth="0.5" />
+                          <path d="M 50 500 Q 200 450 350 500" stroke="#2563eb" fill="none" strokeWidth="0.5" className="animate-pulse" />
+                       </svg>
+
+                       {/* Stages Breakdown */}
+                       <div className="space-y-12 relative z-10">
+                          {/* Stage 1: Extraction */}
+                          <div className="flex items-center gap-6 group/item">
+                             <div className="w-12 h-12 rounded-xl bg-blue-600/20 border border-blue-600/40 flex items-center justify-center text-xl shadow-[0_0_20px_rgba(37,99,235,0.2)]">🌍</div>
+                             <div className="flex-1 space-y-2">
+                                <div className="flex justify-between items-center">
+                                   <span className="text-[9px] font-black uppercase tracking-widest text-blue-400">Veri Ayıklama</span>
+                                   <span className="text-[7px] font-bold text-emerald-400">Tamamlandı</span>
+                                </div>
+                                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                                   <div className="h-full bg-blue-500 w-full animate-[shimmer_2s_infinite]"></div>
+                                </div>
+                                <p className="text-[9px] text-white/50 font-medium italic">"Sydney Tech Fuarı katılımcı listesi (342 şirket) tarandı."</p>
+                             </div>
+                          </div>
+
+                          {/* Stage 2: Intelligence Matching */}
+                          <div className="flex items-center gap-6 translate-x-4">
+                             <div className="w-12 h-12 rounded-xl bg-purple-600/20 border border-purple-600/40 flex items-center justify-center text-xl shadow-[0_0_20px_rgba(147,51,234,0.2)]">🔍</div>
+                             <div className="flex-1 space-y-3">
+                                <span className="text-[9px] font-black uppercase tracking-widest text-purple-400">Kimlik Çözümleme</span>
+                                <div className="flex gap-2">
+                                   <div className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-[7px] font-bold text-white/60 flex items-center gap-2">
+                                      <span className="w-1 h-1 bg-blue-500 rounded-full"></span> LinkedIn Match
+                                   </div>
+                                   <div className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-[7px] font-bold text-white/60 flex items-center gap-2">
+                                      <span className="w-1 h-1 bg-emerald-500 rounded-full"></span> Email Verified
+                                   </div>
+                                </div>
+                             </div>
+                          </div>
+
+                          {/* Stage 3: Cold Email Synthesis */}
+                          <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-3xl p-6 shadow-2xl mt-8">
+                             <div className="flex items-center gap-4 mb-4">
+                                <div className="w-10 h-10 bg-emerald-500/20 text-emerald-500 rounded-lg flex items-center justify-center text-lg">✉️</div>
+                                <div>
+                                   <h5 className="text-[10px] font-black uppercase tracking-widest text-white">Nöral Taslak Oluşturma</h5>
+                                   <p className="text-[7px] text-white/40">Kişiselleştirme Skoru: %98.4</p>
+                                </div>
+                             </div>
+                             <div className="space-y-3 p-4 bg-black/40 border border-white/5 rounded-2xl">
+                                <div className="h-2 w-3/4 bg-white/10 rounded-full"></div>
+                                <div className="h-2 w-1/2 bg-white/10 rounded-full"></div>
+                                <p className="text-[10px] text-white/70 italic leading-relaxed">
+                                   "Sydney fuarındaki standınızda bahsettiğiniz **yeni nesil sürdürülebilirlik modülü**, bizim **ABC çözümümüzle** tam entegre çalışarak maliyetlerinizi düşürebilir..."
+                                </p>
+                             </div>
                           </div>
                        </div>
-                       <div className="space-y-6">
-                          <div className="p-5 bg-white/[0.03] border border-white/5 rounded-2xl">
-                             <label className="text-[7px] font-black text-blue-400 uppercase tracking-widest block mb-2">Oluşturulan Buzkıran</label>
-                             <p className="text-[11px] text-white/70 italic leading-relaxed">
-                                "Sydney Fuarı'ndaki son standınızda sergilediğiniz enerji optimizasyonu teknolojileri, bölgedeki sürdürülebilirlik hedeflerimizle tam örtüşüyor..."
-                             </p>
+                    </div>
+
+                    {/* Telemetry Footer */}
+                    <div className="mt-8 pt-6 border-t border-white/5 flex justify-between items-center text-[7px] font-black text-white/30 uppercase tracking-[0.3em]">
+                       <div className="flex gap-8">
+                          <div className="flex flex-col gap-1">
+                             <span className="text-white/10">Tokens Processed</span>
+                             <span className="text-white/60">1.2M+ / Day</span>
                           </div>
+                          <div className="flex flex-col gap-1">
+                             <span className="text-white/10">Entity Precision</span>
+                             <span className="text-blue-500">Sub-Milimetrical</span>
+                          </div>
+                       </div>
+                       <div className="flex items-center gap-2">
+                          <div className="h-1 w-12 bg-white/5 rounded-full overflow-hidden">
+                             <div className="h-full bg-blue-600 w-2/3 animate-pulse"></div>
+                          </div>
+                          <span>Syncing...</span>
                        </div>
                     </div>
                  </div>
@@ -234,34 +283,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section id="faq" className="py-32 bg-white">
-         <div className="container mx-auto px-6 lg:px-12">
-            <div className="max-w-4xl mx-auto">
-               <div className="text-center mb-20">
-                  <span className="text-[11px] font-black text-blue-600 uppercase tracking-[0.4em] mb-4 block">Destek & Bilgi</span>
-                  <h2 className="text-4xl font-black uppercase tracking-tighter">Merak Edilenler</h2>
-               </div>
-               
-               <div className="space-y-6">
-                  {[
-                    { q: "Veriler ne kadar güncel?", a: "DeepVera, statik bir veritabanı kullanmaz. Bir arama başlattığınızda yapay zeka ajanlarımız web'i o anda canlı olarak tarar, bu yüzden veriler her zaman gerçektir." },
-                    { q: "E-postaları otomatik mi gönderiyor?", a: "Hayır, DeepVera size en iyi taslağı ve iletişim bilgilerini hazırlar. Kontrol sizde kalır, tek tıkla Gmail veya WhatsApp üzerinden gönderebilirsiniz." },
-                    { q: "Kredi sisteminiz nasıl çalışıyor?", a: "Her derin şirket taraması 1 kredi tüketir. Kayıt olduğunuzda 1500 ücretsiz kredi hesabınıza tanımlanır." },
-                    { q: "Fuar sitelerinden veri çekmek yasal mı?", a: "DeepVera sadece kamuya açık (public) web verilerini analiz eder ve bunları kurumsal istihbarat raporu olarak sunar." }
-                  ].map((faq, i) => (
-                    <div key={i} className="p-8 bg-slate-50 rounded-3xl border border-slate-100 hover:border-blue-200 transition-all group">
-                       <h4 className="text-lg font-black uppercase tracking-tight mb-3 flex items-center gap-4">
-                          <span className="text-blue-600">Q.</span> {faq.q}
-                       </h4>
-                       <p className="text-slate-500 text-sm font-medium leading-relaxed pl-8">{faq.a}</p>
-                    </div>
-                  ))}
-               </div>
-            </div>
-         </div>
-      </section>
-
       {/* Final CTA */}
       <section className="py-40 relative overflow-hidden">
          <div className="absolute inset-0 bg-blue-600 z-0"></div>
@@ -288,22 +309,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                   <button onClick={() => scrollToSection('how-it-works')} className="hover:text-blue-600">Süreç</button>
                   <button onClick={() => scrollToSection('features')} className="hover:text-blue-600">Yetenekler</button>
                   <button onClick={() => scrollToSection('sectors')} className="hover:text-blue-600">Sektörler</button>
-                  <a href="mailto:contact@deepvera.com.tr" className="hover:text-blue-600">Destek</a>
-               </div>
-            </div>
-            <div className="border-t border-slate-50 pt-10 flex flex-col md:flex-row justify-between items-center gap-4">
-               <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">© 2025 DEEPVERA İSTİHBARAT SİSTEMİ</p>
-               <div className="flex gap-6 text-[9px] font-bold text-slate-300 uppercase tracking-widest">
-                  <a href="#" className="hover:text-slate-600">Kullanım Koşulları</a>
-                  <a href="#" className="hover:text-slate-600">Gizlilik Politikası</a>
                </div>
             </div>
          </div>
       </footer>
 
       <style>{`
-        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        .animate-marquee { display: flex; width: 200%; animation: marquee 30s linear infinite; }
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
         html { scroll-behavior: smooth; }
       `}</style>
     </div>

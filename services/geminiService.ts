@@ -102,8 +102,11 @@ export const findCompanyIntel = async (
       ${senderContext}
 
       GÖREV: 
-      1. Bu şirketin kurumsal iletişim bilgilerini (E-posta, Tel) ve sosyal medya linklerini bul.
-      2. Kişiselleştirilmiş, ikna edici ve profesyonel bir B2B e-posta taslağı hazırla.
+      1. Bu şirketin kurumsal iletişim bilgilerini (E-posta, Tel) bul.
+      2. Şirketin SOSYAL MEDYA profillerini (LinkedIn, Instagram, Twitter/X) mutlaka bul ve URL olarak getir.
+      3. Kişiselleştirilmiş, ikna edici ve profesyonel bir B2B e-posta taslağı hazırla.
+
+      SOSYAL MEDYA ÖNCELİĞİ: Şirketin resmi sosyal medya hesaplarını doğrula. Yanlış link getirme.
 
       E-POSTA YAZIM KURALLARI (ZORUNLU):
       - Yapı: E-posta metni en az 3 paragraftan oluşmalıdır.
@@ -111,8 +114,7 @@ export const findCompanyIntel = async (
       - Paragraf 1: Etkileyici bir giriş (Buzkıran). Şirketin sektördeki önemine değin.
       - Paragraf 2: Çözüm odaklı değer önerisi. Kendi hizmetlerini onların ihtiyaçlarıyla eşleştir.
       - Paragraf 3: Net bir eylem çağrısı (Toplantı veya katalog talebi).
-      - İmza öncesine [COMPANY_LOGO] etiketini yerleştir.
-      - Tümce Düzeni: Cümleler devrik olmamalı, paragraf geçişleri mantıklı olmalıdır.`,
+      - İmza öncesine [COMPANY_LOGO] etiketini yerleştir.`,
       config: { 
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",

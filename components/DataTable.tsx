@@ -73,17 +73,23 @@ const DataTable: React.FC<Props> = ({ participants, onSelectParticipant, onClear
                   <div className="flex-1 min-w-0">
                     <h4 className={`text-sm font-black tracking-tight truncate transition-colors mb-1 ${activeId === p.id ? 'text-blue-600' : 'text-slate-900'}`}>{p.name}</h4>
                     <div className="flex flex-col gap-1">
-                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter truncate">📍 {p.location || 'Avustralya'}</span>
+                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter truncate">📍 {p.location || 'Bilinmiyor'}</span>
                        <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest">{p.industry || 'Potansiyel'}</span>
                     </div>
                   </div>
                 </div>
 
+                <div className="flex items-center gap-2 mb-4">
+                  {p.linkedin && <span className="w-5 h-5 bg-blue-50 text-[#0077B5] rounded flex items-center justify-center text-[10px] font-bold">L</span>}
+                  {p.instagram && <span className="w-5 h-5 bg-pink-50 text-[#E4405F] rounded flex items-center justify-center text-[10px] font-bold">I</span>}
+                  {p.twitter && <span className="w-5 h-5 bg-slate-50 text-black rounded flex items-center justify-center text-[10px] font-bold">X</span>}
+                </div>
+
                 <div className="flex items-center justify-between pt-4 border-t border-slate-50 mt-4">
                   {p.status === 'completed' ? (
-                     <span className="text-[8px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Tarandı</span>
+                     <span className="text-[8px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Analiz Tamam</span>
                   ) : (
-                     <span className="text-[8px] font-black uppercase text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full animate-pulse">Nöral Ayrıştırma...</span>
+                     <span className="text-[8px] font-black uppercase text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full animate-pulse">İşleniyor...</span>
                   )}
                   {p.website && (
                     <div className="text-[9px] font-bold text-slate-300 group-hover:text-blue-600 transition-colors truncate max-w-[100px]">
