@@ -24,7 +24,25 @@ const SECTORS = [
   { id: 'beauty', label: 'Güzellik/Kozmetik', icon: '💄' },
 ];
 
-const STATES = ["Tüm Türkiye", "İstanbul", "Ankara", "İzmir", "Bursa", "Antalya", "Kocaeli", "Adana", "Gaziantep", "Konya"];
+const STATES = [
+  "Tüm Türkiye", 
+  "İstanbul", 
+  "Ankara", 
+  "İzmir", 
+  "Bursa", 
+  "Antalya", 
+  "Kocaeli", 
+  "Adana", 
+  "Gaziantep", 
+  "Konya", 
+  "Marmara Bölgesi", 
+  "Ege Bölgesi", 
+  "İç Anadolu Bölgesi",
+  "Akdeniz Bölgesi",
+  "Karadeniz Bölgesi",
+  "Güneydoğu Anadolu",
+  "Doğu Anadolu"
+];
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(() => {
@@ -53,6 +71,7 @@ const App: React.FC = () => {
   const [targetCityName, setTargetCityName] = useState<string>('');
   const [queryContext, setQueryContext] = useState<string>('');
   const [leadLimit, setLeadLimit] = useState<number>(20);
+  const [isAutopilot, setIsAutopilot] = useState<boolean>(false); 
   const [status, setStatus] = useState<AppStatus>(AppStatus.IDLE);
   const [logs, setLogs] = useState<string[]>([]);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -66,35 +85,58 @@ const App: React.FC = () => {
     localStorage.setItem('deepvera_leads_cache', JSON.stringify(participants));
   }, [user, tokenBalance, participants]);
 
-  const addLog = (msg: string) => {
-    setLogs(prev => [msg, ...prev].slice(0, 10));
+  const addLog = (msg: string) => setLogs([msg]);
+
+  const clearParticipants = () => {
+    if (window.confirm("Tüm istihbarat havuzunu temizlemek istediğinizden emin misiniz? Bu işlem geri alınamaz.")) {
+      setParticipants([]);
+      localStorage.removeItem('deepvera_leads_cache');
+      setSelectedParticipant(null);
+    }
+  };
+
+  const exportToExcel = () => {
+    if (participants.length === 0) return;
+    const headers = ["Şirket Adı", "Web Sitesi", "E-posta", "Telefon", "Sektör", "Konum", "LinkedIn", "Instagram", "X", "Buzkıran", "E-posta Konusu", "E-posta Taslağı"];
+    const rows = participants.map(p => [
+      p.name, p.website, p.email, p.phone, p.industry, p.location, p.linkedin || '', p.instagram || '', p.twitter || '', p.icebreaker || '', p.emailSubject || '', (p.emailDraft || '').replace(/\n/g, ' [P] ')
+    ]);
+    const csvContent = [headers.join(";"), ...rows.map(row => row.map(cell => `"${(cell || "").toString().replace(/"/g, '""')}"`).join(";"))].join("\n");
+    const BOM = "\uFEFF";
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `DeepVera_Raporu_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const startAnalysis = async () => {
     if (tokenBalance < 1) { setIsPaymentModalOpen(true); return; }
     stopAnalysisRef.current = false;
     setStatus(AppStatus.LOADING);
-    setLogs(["İstihbarat Boru Hattı Isınıyor...", "Bağlantı Tünelleri Test Ediliyor..."]);
+    setLogs(["Nöral Tarama Başlatılıyor..."]);
     
     try {
       const sectorLabel = SECTORS.find(s => s.id === selectedSector)?.label;
       const locationLabel = targetCityName ? `${targetCityName}, ${selectedCity}` : selectedCity;
       const activeQuery = queryContext.trim() || `${sectorLabel} companies in ${locationLabel}`;
 
-      addLog(`Hedef Kilitlendi: ${activeQuery}`);
       const rawResults = await extractLeadList(activeQuery, selectedSector, locationLabel, leadLimit, participants.map(p => p.name), (msg) => addLog(msg));
       
       if (!rawResults || rawResults.length === 0) { 
-        addLog("HATA: Hedef sinyal alınamadı.");
+        addLog("Sonuç bulunamadı.");
         setStatus(AppStatus.IDLE); 
         return; 
       }
 
       const initialLeads: Participant[] = rawResults.slice(0, leadLimit).map(r => ({
         id: `p-${Date.now()}-${Math.random()}`,
-        name: r.name || 'İsimsiz Şirket',
+        name: r.name || 'Şirket',
         website: r.website || '',
-        email: 'Analiz Ediliyor...',
+        email: 'Ayıklanıyor...',
         phone: '...',
         industry: sectorLabel,
         location: r.location || locationLabel,
@@ -108,20 +150,18 @@ const App: React.FC = () => {
       for (let i = 0; i < initialLeads.length; i++) {
         if (stopAnalysisRef.current) break;
         const current = initialLeads[i];
-        addLog(`Derin Madencilik: ${current.name}`);
         try {
-          await sleep(1000);
+          await sleep(500);
           const intel = await findCompanyIntel(current.name, current.website, selectedSector, user!, (msg) => addLog(msg));
           const updatedLead = { ...current, ...intel, status: 'completed' as const };
           setParticipants(prev => prev.map(p => p.id === current.id ? updatedLead : p));
           setTokenBalance(prev => Math.max(0, prev - 1));
         } catch (error) {
-          addLog(`Atlanıyor: ${current.name}`);
           setParticipants(prev => prev.map(p => p.id === current.id ? { ...p, status: 'failed' as const } : p));
         }
       }
-    } catch (err: any) { 
-      addLog(`DURDURULDU: ${err.message}`);
+    } catch (err) { 
+      addLog("Sistem Kesintiye Uğradı.");
     }
     setStatus(AppStatus.IDLE);
   };
@@ -139,7 +179,7 @@ const App: React.FC = () => {
           <header className="h-20 shrink-0 flex items-center px-6 border-b border-slate-100 bg-white sticky top-0 z-[60] shadow-sm">
             <div className="flex items-center gap-4 min-w-fit">
               <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-base shadow-lg">DV</div>
-              <div className="hidden lg:flex flex-col leading-none text-left">
+              <div className="hidden lg:flex flex-col leading-none">
                 <span className="font-black text-base tracking-tighter uppercase">DeepVera <span className="text-blue-600">AI</span></span>
                 <span className="text-[6px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">İstihbarat Merkezi</span>
               </div>
@@ -147,105 +187,91 @@ const App: React.FC = () => {
 
             <div className="mx-6 h-8 w-px bg-slate-100 hidden sm:block"></div>
 
-            <div className="flex-1 flex items-center gap-2 max-w-7xl overflow-hidden justify-center">
-              <input 
-                type="text"
-                value={queryContext}
-                onChange={(e) => setQueryContext(e.target.value)}
-                placeholder="URL / Hedef..."
-                className="w-44 lg:w-56 h-11 px-4 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold outline-none focus:bg-white focus:border-blue-500 transition-all shadow-inner"
-              />
+            <div className="flex-1 flex items-center gap-2 max-w-7xl overflow-hidden">
+              <div className="flex-[2] relative group min-w-[150px]">
+                <input 
+                  type="text"
+                  value={queryContext}
+                  onChange={(e) => setQueryContext(e.target.value)}
+                  placeholder="URL veya anahtar kelime yapıştırın... (Filtreleri geçersiz kılar)"
+                  className="w-full h-11 pl-4 pr-4 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/30 transition-all shadow-inner"
+                />
+              </div>
 
-              <div className={`hidden xl:flex items-center gap-2 ${isQueryActive ? 'opacity-30 grayscale pointer-events-none' : ''}`}>
-                <select value={selectedSector} onChange={(e) => setSelectedSector(e.target.value)} className="h-11 bg-slate-50 border border-slate-100 rounded-xl px-3 text-[9px] font-black uppercase tracking-widest outline-none w-28">
+              <div className={`flex items-center gap-2 transition-all ${isQueryActive ? 'opacity-30 grayscale pointer-events-none' : ''}`}>
+                <select 
+                  value={selectedSector} 
+                  onChange={(e) => setSelectedSector(e.target.value)} 
+                  disabled={isQueryActive}
+                  className="h-11 bg-slate-50 border border-slate-100 rounded-xl px-3 text-[9px] font-black uppercase tracking-widest outline-none hover:border-slate-300 transition-all appearance-none cursor-pointer w-40"
+                >
                   {SECTORS.map(s => <option key={s.id} value={s.id}>{s.icon} {s.label}</option>)}
                 </select>
-                <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)} className="h-11 bg-slate-50 border border-slate-100 rounded-xl px-3 text-[9px] font-black uppercase tracking-widest outline-none w-32">
+
+                <select 
+                  value={selectedCity} 
+                  onChange={(e) => setSelectedCity(e.target.value)} 
+                  disabled={isQueryActive}
+                  className="h-11 bg-slate-50 border border-slate-100 rounded-xl px-3 text-[9px] font-black uppercase tracking-widest outline-none hover:border-slate-300 transition-all appearance-none cursor-pointer w-48"
+                >
                   {STATES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
+
+                <input 
+                  type="text"
+                  value={targetCityName}
+                  onChange={(e) => setTargetCityName(e.target.value)}
+                  disabled={isQueryActive}
+                  placeholder="İlçe/Semt"
+                  className="h-11 px-3 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold outline-none w-28"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <input 
+                  type="number"
+                  value={leadLimit}
+                  onChange={(e) => setLeadLimit(parseInt(e.target.value) || 1)}
+                  className="h-11 w-16 bg-slate-50 border border-slate-100 rounded-xl px-2 text-[10px] font-black text-center outline-none shadow-inner"
+                  min="1"
+                  max="500"
+                />
               </div>
 
               {status === AppStatus.IDLE ? (
-                <button onClick={startAnalysis} className="h-11 px-6 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] shadow-lg shadow-blue-100 hover:bg-slate-900 transition-all shrink-0">🚀 BAŞLAT</button>
+                <button onClick={startAnalysis} className="h-11 px-6 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] shadow-lg shadow-blue-100 hover:bg-slate-900 transition-all active:scale-95 flex items-center gap-2 shrink-0">🚀 BAŞLAT</button>
               ) : (
                 <button onClick={() => { stopAnalysisRef.current = true; setStatus(AppStatus.IDLE); }} className="h-11 px-6 bg-red-600 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] shadow-lg shadow-red-100 animate-pulse shrink-0">⏹️ DURDUR</button>
               )}
             </div>
 
-            <div className="flex items-center gap-4 shrink-0 ml-4">
-              <div className="flex flex-col items-end leading-none cursor-pointer group" onClick={() => setIsPaymentModalOpen(true)}>
-                <span className="text-xs font-black text-blue-600 group-hover:scale-110 transition-transform">{tokenBalance}</span>
+            <div className="mx-6 h-8 w-px bg-slate-100 hidden xl:block"></div>
+
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="flex flex-col items-end leading-none cursor-pointer" onClick={() => setIsPaymentModalOpen(true)}>
+                <span className="text-xs font-black text-blue-600">{tokenBalance}</span>
                 <span className="text-[6px] font-black text-slate-400 uppercase tracking-widest">KREDİ</span>
               </div>
-              <button onClick={() => setIsIdentityModalOpen(true)} className="w-9 h-9 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center text-xs hover:bg-white transition-all">⚙️</button>
-              <div className="w-9 h-9 rounded-lg bg-slate-900 text-white text-[10px] font-black flex items-center justify-center cursor-pointer hover:bg-blue-600 transition-colors" onClick={() => { setUser(null); setView('landing'); }}>{user?.name?.charAt(0)}</div>
+              <button onClick={() => setIsIdentityModalOpen(true)} className="w-9 h-9 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center text-xs grayscale hover:grayscale-0 transition-all">⚙️</button>
+              <div className="w-9 h-9 rounded-lg bg-slate-900 border border-slate-100 flex items-center justify-center text-white text-[10px] font-black cursor-pointer" onClick={() => { setUser(null); setView('landing'); }}>
+                {user?.name?.charAt(0)}
+              </div>
             </div>
           </header>
           
           <main className="flex-1 flex flex-col overflow-hidden">
-            {/* HİKAYE ODAKLI NÖRAL İSTİHBARAT BORU HATTI */}
             {status !== AppStatus.IDLE && (
-              <div className="bg-[#020617] h-48 flex flex-col justify-center border-b border-blue-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.6)] z-[55] overflow-hidden relative">
-                <div className="absolute inset-0 scan-line opacity-5 pointer-events-none"></div>
-                
-                {/* Aşama Göstergeleri */}
-                <div className="flex items-center justify-between px-20 max-w-6xl mx-auto w-full relative">
-                   {/* Bağlantı Çizgisi */}
-                   <div className="absolute top-1/2 left-24 right-24 h-0.5 bg-blue-500/10 -translate-y-1/2">
-                      <div className="h-full bg-blue-500 shadow-[0_0_15px_#3b82f6] animate-[shimmer_2s_infinite] transition-all" style={{ width: `${(participants.filter(p => p.status === 'completed').length / leadLimit) * 100}%` }}></div>
-                   </div>
-
-                   {/* Step 1: Targeting */}
-                   <div className={`flex flex-col items-center gap-3 relative z-10 transition-all duration-500 ${status === AppStatus.LOADING ? 'scale-110' : 'opacity-40'}`}>
-                      <div className={`w-14 h-14 rounded-2xl border-2 flex items-center justify-center transition-all ${status === AppStatus.LOADING ? 'bg-blue-600 border-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.6)]' : 'bg-slate-800 border-slate-700'}`}>
-                         <span className="text-xl">🎯</span>
-                      </div>
-                      <div className="text-center">
-                         <span className="text-white text-[9px] font-black uppercase tracking-widest block">Hedefleme</span>
-                         <span className="text-blue-400 text-[7px] font-bold uppercase">{status === AppStatus.LOADING ? 'Sinyal Alındı' : 'Kilitlendi'}</span>
-                      </div>
-                   </div>
-
-                   {/* Step 2: Signal Scan */}
-                   <div className={`flex flex-col items-center gap-3 relative z-10 transition-all duration-500 ${status === AppStatus.FINDING_DETAILS ? 'scale-110' : 'opacity-40'}`}>
-                      <div className={`w-14 h-14 rounded-2xl border-2 flex items-center justify-center transition-all ${status === AppStatus.FINDING_DETAILS ? 'bg-blue-600 border-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.6)]' : 'bg-slate-800 border-slate-700'}`}>
-                         <div className={status === AppStatus.FINDING_DETAILS ? 'animate-spin' : ''}>🔍</div>
-                      </div>
-                      <div className="text-center">
-                         <span className="text-white text-[9px] font-black uppercase tracking-widest block">Düğüm Taraması</span>
-                         <span className="text-blue-400 text-[7px] font-bold uppercase">{status === AppStatus.FINDING_DETAILS ? 'Taranıyor' : 'Beklemede'}</span>
-                      </div>
-                   </div>
-
-                   {/* Step 3: Mining */}
-                   <div className={`flex flex-col items-center gap-3 relative z-10 transition-all duration-500 ${status === AppStatus.FINDING_DETAILS ? 'scale-110' : 'opacity-40'}`}>
-                      <div className={`w-14 h-14 rounded-2xl border-2 flex items-center justify-center transition-all ${status === AppStatus.FINDING_DETAILS ? 'bg-blue-600 border-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.6)]' : 'bg-slate-800 border-slate-700'}`}>
-                         <span className="text-xl">💎</span>
-                      </div>
-                      <div className="text-center">
-                         <span className="text-white text-[9px] font-black uppercase tracking-widest block">Veri Madenciliği</span>
-                         <span className="text-blue-400 text-[7px] font-bold uppercase">Ayıklanıyor</span>
-                      </div>
-                   </div>
-
-                   {/* Step 4: AI Synthesis */}
-                   <div className={`flex flex-col items-center gap-3 relative z-10 transition-all duration-500 ${status === AppStatus.FINDING_DETAILS ? 'scale-110' : 'opacity-40'}`}>
-                      <div className={`w-14 h-14 rounded-2xl border-2 flex items-center justify-center transition-all ${status === AppStatus.FINDING_DETAILS ? 'bg-blue-600 border-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.6)]' : 'bg-slate-800 border-slate-700'}`}>
-                         <span className="text-xl">🧠</span>
-                      </div>
-                      <div className="text-center">
-                         <span className="text-white text-[9px] font-black uppercase tracking-widest block">Nöral Sentez</span>
-                         <span className="text-blue-400 text-[7px] font-bold uppercase">Buzkıran Yazılıyor</span>
-                      </div>
-                   </div>
+              <div className="bg-[#00D1FF] px-8 py-2 flex justify-between items-center shadow-[0_0_20px_rgba(0,209,255,0.3)] z-[55] border-b border-white/20">
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-1">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-ping"></div>
+                  </div>
+                  <span className="text-[9px] font-black text-white uppercase tracking-[0.3em] drop-shadow-md">Küresel İstihbarat Aktif</span>
                 </div>
-
-                {/* Alt: Canlı İşlem Logu */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-white/5 px-6 py-2 rounded-full border border-white/5">
-                   <span className="text-[8px] font-mono text-blue-500 animate-pulse">SYSTEM_LOG_v2.4:</span>
-                   <span className="text-[9px] font-mono text-white/80 whitespace-nowrap">{logs[0] || 'Hazırlanıyor...'}</span>
-                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse ml-4"></span>
+                <div className="flex-1 max-w-lg mx-8 h-1 bg-white/30 rounded-full overflow-hidden">
+                  <div className="h-full bg-white shadow-[0_0_8px_white] transition-all duration-500" style={{ width: `${(participants.filter(p => p.status === 'completed').length / leadLimit) * 100}%` }}></div>
                 </div>
+                <span className="text-[8px] font-black text-white uppercase tracking-widest animate-pulse drop-shadow-sm">{logs[0]}</span>
               </div>
             )}
 
@@ -255,8 +281,8 @@ const App: React.FC = () => {
                 status={status} 
                 tokenBalance={tokenBalance} 
                 onSelectParticipant={setSelectedParticipant}
-                onExport={() => {}} 
-                onClear={() => setParticipants([])}
+                onExport={exportToExcel} 
+                onClear={clearParticipants}
               />
               
               <CompanyDetail 

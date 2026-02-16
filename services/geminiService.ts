@@ -2,13 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Participant, User } from "../types";
 
-const getAI = () => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    throw new Error("API_KEY_MISSING: Sistem yapılandırması eksik. Lütfen Vercel panelinden API_KEY değişkenini kontrol edin.");
-  }
-  return new GoogleGenAI({ apiKey });
-};
+const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -23,10 +17,9 @@ async function callWithRetry<T>(
     try {
       return await fn();
     } catch (error: any) {
-      console.error("Gemini API Error:", error);
       const isRetryable = error.status === 429 || error.status === 503 || error.status === 500;
       if (i < retries - 1 && isRetryable) {
-        if (onRetry) onRetry(`Bağlantı darboğazı, tünel yenileniyor... (${i + 1}/${retries})`);
+        if (onRetry) onRetry(`Sistem meşgul, tekrar deneniyor... (${i + 1}/${retries})`);
         await sleep(currentDelay);
         currentDelay *= 2;
         continue;
@@ -34,7 +27,7 @@ async function callWithRetry<T>(
       throw error;
     }
   }
-  throw new Error("Sistem yanıt vermiyor. Lütfen daha sonra tekrar deneyin.");
+  throw new Error("Bağlantı sağlanamadı.");
 }
 
 export const extractLeadList = async (
@@ -52,14 +45,14 @@ export const extractLeadList = async (
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: isUrl 
-        ? `GÖREV: Şu web sitesini analiz et: "${queryContext}". 
-           Bu sayfadaki tüm katılımcı (exhibitor) veya üye şirket isimlerini bul.
-           Eğer sayfa doğrudan liste içermiyorsa, Google Search kullanarak bu etkinliğin katılımcılarını bul ve listeyi tamamla.
-           Sadece şirket ismi, varsa web sitesi ve lokasyon verisini döndür.
-           JSON formatında döndür.`
-        : `GÖREV: "${location}" bölgesindeki "${sector}" sektöründe faaliyet gösteren ${limit} adet aktif ve büyük ölçekli şirket bul. 
-           Lütfen şu şirketleri atla (mevcut listede var): ${excludeNames.slice(-10).join(", ")}.
-           EK BİLGİ: ${queryContext}`,
+        ? `GÖREV: Şu fuar/etkinlik sitesini analiz et: "${queryContext}". 
+           Bu sayfadaki tüm katılımcı (exhibitor) veya sergileyici firma isimlerini bul.
+           Eğer sayfa doğrudan liste içermiyorsa, Google Search kullanarak bu sitenin 'katılımcı listesi' sayfasını bul ve oradaki isimleri getir.
+           Her şirket için tam isim ve varsa web sitesi URL'sini çıkar.
+           Hedef: ${limit} adet şirket.`
+        : `GÖREV: "${location}" bölgesindeki "${sector}" sektöründe faaliyet gösteren ${limit} adet büyük ölçekli şirket bul. 
+           EK BAĞLAM: ${queryContext}
+           ŞU İSİMLERİ ATLA: ${excludeNames.slice(-10).join(", ")}`,
       config: {
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
@@ -83,15 +76,8 @@ export const extractLeadList = async (
       }
     });
 
-    const text = response.text;
-    if (!text) return [];
-    try {
-      const data = JSON.parse(text);
-      return data.leads || [];
-    } catch (e) {
-      console.error("JSON Ayrıştırma Hatası:", text);
-      return [];
-    }
+    const data = JSON.parse(response.text || '{"leads":[]}');
+    return data.leads || [];
   }, onRetry);
 };
 
@@ -103,15 +89,29 @@ export const findCompanyIntel = async (
   onRetry?: (msg: string) => void
 ): Promise<Partial<Participant>> => {
   const ai = getAI();
-  const senderContext = `GÖNDERİCİ: ${sender?.companyName || 'DeepVera AI'} (${sender?.companyDescription || 'Kurumsal İstihbarat ve B2B Otomasyon'})`;
+  
+  const senderContext = `GÖNDERİCİ BİLGİLERİ:
+- Şirket: ${sender?.companyName || 'DeepVera AI'}
+- Uzmanlık Alanı: ${sender?.companyDescription || 'Yapay Zeka ve Veri Madenciliği'}
+- Yetkili: ${sender?.authorizedPerson || 'Satış Direktörü'}`;
 
   return callWithRetry(async () => {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `ŞİRKET ANALİZİ: "${name}" (${website || 'URL bilinmiyor'})
+      contents: `HEDEF ŞİRKET: "${name}" (${website || 'Web sitesi mevcut değil'})
       ${senderContext}
-      GÖREV: Bu şirketin iletişim e-postasını, telefonunu ve sosyal medya (LinkedIn/Instagram) linklerini bul.
-      Bu şirkete özel, onları etkileyecek profesyonel bir B2B e-posta taslağı ve özel bir 'buzkıran' cümlesi hazırla.`,
+
+      GÖREV: 
+      1. Bu şirketin kurumsal iletişim bilgilerini (E-posta, Tel) ve sosyal medya linklerini bul.
+      2. Kişiselleştirilmiş, ikna edici ve profesyonel bir B2B e-posta taslağı hazırla.
+
+      E-POSTA YAZIM KURALLARI:
+      - Ton: Profesyonel, saygılı ve değer odaklı.
+      - Yapı: E-posta en az 3 paragraftan oluşmalıdır (Giriş, Değer Önerisi, Eylem Çağrısı).
+      - Dil: Akıcı ve hatasız Türkçe. Tümce düzenine ve büyük/küçük harf kullanımına tam uyulmalıdır.
+      - İçerik: Hedef şirketin faaliyetleri ile göndericinin hizmetleri arasında mantıklı bir köprü kur.
+      - Buzkıran (Icebreaker): Hedef şirketin son başarılarına veya pazar konumuna atıfta bulunarak başla.
+      - İmzadan önce [COMPANY_LOGO] etiketini yerleştir.`,
       config: { 
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
@@ -120,18 +120,17 @@ export const findCompanyIntel = async (
           properties: {
             email: { type: Type.STRING },
             phone: { type: Type.STRING },
-            icebreaker: { type: Type.STRING },
-            emailSubject: { type: Type.STRING },
-            emailDraft: { type: Type.STRING },
-            industry: { type: Type.STRING },
             linkedin: { type: Type.STRING },
             instagram: { type: Type.STRING },
-            twitter: { type: Type.STRING }
+            twitter: { type: Type.STRING },
+            icebreaker: { type: Type.STRING, description: "E-postanın girişindeki dikkat çekici cümle" },
+            emailSubject: { type: Type.STRING, description: "Dikkat çekici e-posta konusu" },
+            emailDraft: { type: Type.STRING, description: "Paragraflar halinde yazılmış tam e-posta metni" },
+            industry: { type: Type.STRING }
           }
         }
       },
     });
-    const text = response.text;
-    return text ? JSON.parse(text) : {};
+    return JSON.parse(response.text || '{}');
   }, onRetry);
 };
