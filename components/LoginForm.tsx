@@ -25,14 +25,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
     companyDescription: ''
   });
 
-  // Demo Admin Hesabı Oluştur (Eğer veritabanı boşsa)
+  // Demo Admin Hesabı Oluştur (Eğer veritabanı boşsa veya admin yoksa)
   useEffect(() => {
     const db = getUsersFromDB();
-    if (db.length === 0) {
+    const adminExists = db.some(u => u.username === 'admin');
+    
+    if (!adminExists) {
       const adminUser = {
         id: 'u-admin',
         username: 'admin',
-        password: '123',
+        password: 'admin', // Şifre 'admin' olarak güncellendi
         email: 'admin@deepvera.ai',
         authorizedPerson: 'Sistem Yöneticisi',
         companyName: 'DeepVera AI Headquarters',
@@ -42,7 +44,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
         role: 'admin',
         provider: 'local'
       };
-      localStorage.setItem(USERS_DB_KEY, JSON.stringify([adminUser]));
+      
+      // Eğer başka kullanıcılar varsa admini başa ekle, yoksa direkt kaydet
+      const newDb = adminExists ? db : [adminUser, ...db];
+      localStorage.setItem(USERS_DB_KEY, JSON.stringify(newDb));
     }
   }, []);
 
@@ -89,7 +94,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
       const newUser = {
         ...formData,
         id: `u-${Date.now()}`,
-        tokenBalance: 50, // Başlangıç kredisi 50 olarak güncellendi
+        tokenBalance: 50,
         isPro: false,
         role: 'user',
         provider: 'local'
