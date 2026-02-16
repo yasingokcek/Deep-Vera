@@ -35,15 +35,14 @@ export interface User {
   companyName?: string;
   companyWebsite?: string;
   companyDescription?: string;
-  companyFixedPhone?: string; 
-  companyMobilePhone?: string; 
-  companyAddress?: string;
   companyLogo?: string;
   authorizedPerson?: string;
-  n8nWebhookUrl?: string; 
+  n8nWebhookUrl?: string;
+  isGmailConnected?: boolean;
+  googleAccessToken?: string;
 }
 
-export type ViewState = 'landing' | 'login' | 'dashboard' | 'admin';
+export type ViewState = 'landing' | 'login' | 'dashboard' | 'admin' | 'gmail_center';
 
 export enum AppStatus {
   IDLE = 'IDLE',
@@ -61,7 +60,6 @@ export interface Sector {
 
 export type SearchMode = 'db' | 'live';
 
-// Added missing ActivityPoint interface used by UserActivityChart component
 export interface ActivityPoint {
   date: string;
   tokensSpent: number;

@@ -11,6 +11,7 @@ import CompanyDetail from './components/CompanyDetail';
 import IdentityModal from './components/IdentityModal';
 import DeepVeraAssistant from './components/DeepVeraAssistant';
 import AdminPanel from './components/AdminPanel';
+import GmailCenter from './components/GmailCenter';
 
 const SECTORS = [
   { id: 'retail', label: 'Perakende & Mağazacılık', icon: '🛒' },
@@ -51,7 +52,7 @@ const App: React.FC = () => {
 
   const [tokenBalance, setTokenBalance] = useState<number>(() => {
     const saved = localStorage.getItem('deepvera_tokens');
-    return saved ? parseInt(saved) : 50; // Varsayılan bakiye 50 olarak güncellendi
+    return saved ? parseInt(saved) : 50; 
   });
 
   const [participants, setParticipants] = useState<Participant[]>(() => {
@@ -70,6 +71,7 @@ const App: React.FC = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isIdentityModalOpen, setIsIdentityModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
+  const [isGmailCenterOpen, setIsGmailCenterOpen] = useState(false);
   
   const stopAnalysisRef = useRef(false);
 
@@ -146,9 +148,7 @@ const App: React.FC = () => {
           setParticipants(prev => prev.map(p => p.id === current.id ? { ...p, status: 'failed' as const } : p));
         }
       }
-
       setSearchStep(4);
-      await sleep(500);
     } catch (err) { console.error(err); }
     setStatus(AppStatus.IDLE);
     setSearchStep(0);
@@ -177,11 +177,12 @@ const App: React.FC = () => {
             onBuyTokens={() => setIsPaymentModalOpen(true)}
             onOpenSettings={() => setIsIdentityModalOpen(true)}
             onOpenAdmin={() => setIsAdminPanelOpen(true)}
+            onOpenGmail={() => setIsGmailCenterOpen(true)}
             role={user?.role}
+            isGmailConnected={user?.isGmailConnected}
           />
           
           <main className="flex-1 flex flex-col overflow-hidden px-6 lg:px-14 py-4 gap-4">
-            {/* Command Dock */}
             <div className="bg-white border border-slate-200/50 rounded-[2.5rem] p-4 shadow-[0_4px_20px_rgb(0,0,0,0.03)] shrink-0">
                <div className="flex flex-col lg:flex-row items-center gap-3">
                   <div className="w-full lg:flex-1 relative group">
@@ -198,6 +199,13 @@ const App: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2 w-full lg:w-auto">
+                    <button 
+                      onClick={() => setIsGmailCenterOpen(true)}
+                      className="h-12 px-6 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                    >
+                      Gmail_Sync
+                    </button>
+
                     <select 
                       value={selectedSector} 
                       onChange={(e) => setSelectedSector(e.target.value)} 
@@ -227,7 +235,6 @@ const App: React.FC = () => {
                         value={leadLimit} 
                         onChange={(e) => setLeadLimit(Number(e.target.value))} 
                         className="h-12 bg-blue-50/40 border border-blue-100 text-blue-600 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest outline-none min-w-[85px] cursor-pointer hover:bg-blue-100/50 transition-colors"
-                        title="Limit Belirle"
                       >
                         {LIMIT_OPTIONS.map(opt => <option key={opt} value={opt}>{opt} LMT</option>)}
                       </select>
@@ -245,36 +252,6 @@ const App: React.FC = () => {
                     </button>
                   </div>
                </div>
-
-               {status !== AppStatus.IDLE && (
-                 <div className="mt-5 pt-5 border-t border-slate-100 animate-fade-in">
-                    <div className="flex justify-between items-center mb-4 px-2">
-                       <div className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-ping"></div>
-                          <span className="text-[8px] font-black text-blue-600 uppercase tracking-[0.4em]">NEURAL_ENGINE_RUNNING</span>
-                       </div>
-                       <div className="flex gap-4 text-[7px] font-bold text-slate-300 uppercase tracking-widest font-mono">
-                          <span>LOAD: {participants.length} / {leadLimit}</span>
-                          <span className="text-emerald-500">READY_TO_RESOLVE</span>
-                       </div>
-                    </div>
-                    <div className="flex items-center justify-between relative px-2">
-                       <div className="absolute h-[1px] bg-slate-100 left-8 right-8 top-1/2 -translate-y-1/2"></div>
-                       {steps.map((step, idx) => (
-                         <div key={idx} className="relative z-10 flex flex-col items-center gap-2">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs shadow-md transition-all duration-700 ${
-                              searchStep > idx + 1 ? 'bg-emerald-500 text-white' : 
-                              searchStep === idx + 1 ? 'bg-blue-600 text-white scale-110 ring-4 ring-blue-50' : 
-                              'bg-white text-slate-200 border border-slate-100'
-                            }`}>
-                               {searchStep > idx + 1 ? "✓" : step.icon}
-                            </div>
-                            <span className={`text-[6px] font-black uppercase tracking-widest transition-colors ${searchStep === idx + 1 ? 'text-blue-600' : 'text-slate-300'}`}>{step.label}</span>
-                         </div>
-                       ))}
-                    </div>
-                 </div>
-               )}
             </div>
 
             <DataTable 
@@ -292,6 +269,7 @@ const App: React.FC = () => {
           <PaymentModal isOpen={isPaymentModalOpen} isPro={user?.isPro} onClose={() => setIsPaymentModalOpen(false)} onSuccess={(t) => setTokenBalance(b => b + t)} onUpgrade={() => user && setUser({...user, isPro: true})} />
           <CompanyDetail participant={selectedParticipant} onClose={() => setSelectedParticipant(null)} userLogo={user?.companyLogo} />
           {isAdminPanelOpen && <AdminPanel onClose={() => setIsAdminPanelOpen(false)} currentUser={user} />}
+          {isGmailCenterOpen && <GmailCenter user={user} onClose={() => setIsGmailCenterOpen(false)} />}
         </>
       )}
     </div>

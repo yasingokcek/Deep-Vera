@@ -29,7 +29,6 @@ const CompanyDetail: React.FC<Props> = ({ participant, onClose, userLogo }) => {
 
   const handleInternalSend = () => {
     setIsSending(true);
-    // Profesyonel Transactional Email API çağrısı (Resend/SendGrid simülasyonu)
     setTimeout(() => {
       setIsSending(false);
       setIsSent(true);
@@ -54,9 +53,27 @@ const CompanyDetail: React.FC<Props> = ({ participant, onClose, userLogo }) => {
             </div>
             <div className="min-w-0">
               <h2 className="text-xl font-black text-slate-900 tracking-tighter uppercase truncate">{participant.name}</h2>
-              <div className="flex items-center gap-2 mt-1">
-                 <span className="px-2 py-0.5 bg-blue-600 text-white text-[7px] font-black uppercase rounded-full tracking-widest">{participant.industry || 'Lead'}</span>
-                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">📍 {participant.location}</span>
+              <div className="flex flex-col gap-1.5 mt-2">
+                 <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 bg-blue-600 text-white text-[7px] font-black uppercase rounded-full tracking-widest">{participant.industry || 'Lead'}</span>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">📍 {participant.location}</span>
+                 </div>
+                 
+                 {/* New Header Detail Info (Email & Phone) */}
+                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                    <div className="flex items-center gap-1.5">
+                       <span className="text-[10px]">📧</span>
+                       <span className={`text-[9px] font-black uppercase tracking-tight ${participant.email?.includes('@') ? 'text-slate-600' : 'text-blue-500 animate-pulse'}`}>
+                          {participant.email || 'Aranıyor...'}
+                       </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                       <span className="text-[10px]">📞</span>
+                       <span className={`text-[9px] font-black uppercase tracking-tight ${participant.phone !== '...' ? 'text-slate-600' : 'text-blue-500 animate-pulse'}`}>
+                          {participant.phone || 'Aranıyor...'}
+                       </span>
+                    </div>
+                 </div>
               </div>
             </div>
           </div>

@@ -60,6 +60,7 @@ const DataTable: React.FC<Props> = ({ participants, onSelectParticipant, onClear
               }`}
             >
               <div className="p-5">
+                {/* Header: Logo & Basic Info */}
                 <div className="flex items-start gap-4 mb-4">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black shrink-0 transition-all duration-500 shadow-sm ${
                     activeId === p.id ? 'bg-blue-600 text-white' : 'bg-slate-900 text-white'
@@ -76,12 +77,30 @@ const DataTable: React.FC<Props> = ({ participants, onSelectParticipant, onClear
                   </div>
                 </div>
 
+                {/* Contact Intel Row */}
+                <div className="mb-4 space-y-2 bg-slate-50/50 p-3 rounded-xl border border-slate-100/50">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] grayscale opacity-50 group-hover:grayscale-0 transition-all">📧</span>
+                    <span className={`text-[8px] font-black truncate tracking-tight ${p.email?.includes('@') ? 'text-slate-700' : 'text-blue-400 animate-pulse italic'}`}>
+                      {p.email || 'Aranıyor...'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] grayscale opacity-50 group-hover:grayscale-0 transition-all">📞</span>
+                    <span className={`text-[8px] font-black truncate tracking-tight ${p.phone !== '...' ? 'text-slate-700' : 'text-blue-400 animate-pulse italic'}`}>
+                      {p.phone || 'Aranıyor...'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Social Presence */}
                 <div className="flex items-center gap-1.5 mb-4">
                   <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[7px] font-black transition-all ${p.linkedin ? 'bg-[#0077B5] text-white shadow-md' : 'bg-slate-50 text-slate-200'}`}>LI</div>
                   <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[7px] font-black transition-all ${p.instagram ? 'bg-[#E4405F] text-white shadow-md' : 'bg-slate-50 text-slate-200'}`}>IG</div>
                   <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[7px] font-black transition-all ${p.twitter ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-50 text-slate-200'}`}>X</div>
                 </div>
 
+                {/* Status Footer */}
                 <div className="flex items-center justify-between pt-4 border-t border-slate-50">
                   {p.status === 'completed' ? (
                      <div className="flex items-center gap-1">
