@@ -71,7 +71,6 @@ const App: React.FC = () => {
   const [targetCityName, setTargetCityName] = useState<string>('');
   const [queryContext, setQueryContext] = useState<string>('');
   const [leadLimit, setLeadLimit] = useState<number>(20);
-  const [isAutopilot, setIsAutopilot] = useState<boolean>(false); 
   const [status, setStatus] = useState<AppStatus>(AppStatus.IDLE);
   const [logs, setLogs] = useState<string[]>([]);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -96,21 +95,47 @@ const App: React.FC = () => {
   };
 
   const exportToExcel = () => {
-    if (participants.length === 0) return;
-    const headers = ["Şirket Adı", "Web Sitesi", "E-posta", "Telefon", "Sektör", "Konum", "LinkedIn", "Instagram", "X", "Buzkıran", "E-posta Konusu", "E-posta Taslağı"];
+    if (participants.length === 0) {
+      alert("Dışa aktarılacak veri bulunamadı.");
+      return;
+    }
+    
+    // Header columns
+    const headers = ["Şirket Adı", "Web Sitesi", "E-posta", "Telefon", "Sektör", "Konum", "LinkedIn", "Instagram", "X (Twitter)", "Buzkıran Cümlesi", "E-posta Konusu", "E-posta Taslağı"];
+    
+    // Map participants to rows
     const rows = participants.map(p => [
-      p.name, p.website, p.email, p.phone, p.industry, p.location, p.linkedin || '', p.instagram || '', p.twitter || '', p.icebreaker || '', p.emailSubject || '', (p.emailDraft || '').replace(/\n/g, ' [P] ')
+      p.name, 
+      p.website, 
+      p.email, 
+      p.phone, 
+      p.industry, 
+      p.location, 
+      p.linkedin || '', 
+      p.instagram || '', 
+      p.twitter || '', 
+      p.icebreaker || '', 
+      p.emailSubject || '', 
+      (p.emailDraft || '').replace(/\n/g, ' [P] ') // Replace newlines with a placeholder for better Excel compatibility
     ]);
-    const csvContent = [headers.join(";"), ...rows.map(row => row.map(cell => `"${(cell || "").toString().replace(/"/g, '""')}"`).join(";"))].join("\n");
+    
+    // Combine headers and rows with semicolon (better for Turkish Excel versions)
+    const csvContent = [
+      headers.join(";"),
+      ...rows.map(row => row.map(cell => `"${(cell || "").toString().replace(/"/g, '""')}"`).join(";"))
+    ].join("\n");
+    
+    // Byte Order Mark (BOM) for UTF-8 Excel support
     const BOM = "\uFEFF";
     const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `DeepVera_Raporu_${new Date().getTime()}.csv`);
+    link.setAttribute("download", `DeepVera_Istihbarat_Raporu_${new Date().toLocaleDateString('tr-TR').replace(/\./g, '-')}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const startAnalysis = async () => {
@@ -193,7 +218,7 @@ const App: React.FC = () => {
                   type="text"
                   value={queryContext}
                   onChange={(e) => setQueryContext(e.target.value)}
-                  placeholder="URL veya anahtar kelime yapıştırın... (Filtreleri geçersiz kılar)"
+                  placeholder="URL veya anahtar kelime yapıştırın..."
                   className="w-full h-11 pl-4 pr-4 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/30 transition-all shadow-inner"
                 />
               </div>
@@ -203,7 +228,7 @@ const App: React.FC = () => {
                   value={selectedSector} 
                   onChange={(e) => setSelectedSector(e.target.value)} 
                   disabled={isQueryActive}
-                  className="h-11 bg-slate-50 border border-slate-100 rounded-xl px-3 text-[9px] font-black uppercase tracking-widest outline-none hover:border-slate-300 transition-all appearance-none cursor-pointer w-40"
+                  className="h-11 bg-slate-50 border border-slate-100 rounded-xl px-3 text-[9px] font-black uppercase tracking-widest outline-none hover:border-slate-300 transition-all cursor-pointer w-40"
                 >
                   {SECTORS.map(s => <option key={s.id} value={s.id}>{s.icon} {s.label}</option>)}
                 </select>
@@ -212,7 +237,7 @@ const App: React.FC = () => {
                   value={selectedCity} 
                   onChange={(e) => setSelectedCity(e.target.value)} 
                   disabled={isQueryActive}
-                  className="h-11 bg-slate-50 border border-slate-100 rounded-xl px-3 text-[9px] font-black uppercase tracking-widest outline-none hover:border-slate-300 transition-all appearance-none cursor-pointer w-48"
+                  className="h-11 bg-slate-50 border border-slate-100 rounded-xl px-3 text-[9px] font-black uppercase tracking-widest outline-none hover:border-slate-300 transition-all cursor-pointer w-48"
                 >
                   {STATES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
@@ -227,12 +252,14 @@ const App: React.FC = () => {
                 />
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
+              {/* ARA SAYISI (LEAD LIMIT) ALANI - GERİ EKLENDİ VE BELİRGİNLEŞTİRİLDİ */}
+              <div className="flex flex-col items-center justify-center px-3 bg-slate-50 rounded-xl border border-slate-200 h-11 min-w-[80px] shadow-inner group hover:border-blue-300 transition-colors">
+                <span className="text-[7px] font-black text-slate-400 uppercase mb-0.5 tracking-widest">ADET</span>
                 <input 
                   type="number"
                   value={leadLimit}
-                  onChange={(e) => setLeadLimit(parseInt(e.target.value) || 1)}
-                  className="h-11 w-16 bg-slate-50 border border-slate-100 rounded-xl px-2 text-[10px] font-black text-center outline-none shadow-inner"
+                  onChange={(e) => setLeadLimit(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-full bg-transparent text-[12px] font-black text-center outline-none text-blue-600 focus:text-slate-900"
                   min="1"
                   max="500"
                 />
@@ -269,7 +296,7 @@ const App: React.FC = () => {
                   <span className="text-[9px] font-black text-white uppercase tracking-[0.3em] drop-shadow-md">Küresel İstihbarat Aktif</span>
                 </div>
                 <div className="flex-1 max-w-lg mx-8 h-1 bg-white/30 rounded-full overflow-hidden">
-                  <div className="h-full bg-white shadow-[0_0_8px_white] transition-all duration-500" style={{ width: `${(participants.filter(p => p.status === 'completed').length / leadLimit) * 100}%` }}></div>
+                  <div className="h-full bg-white shadow-[0_0_8px_white] transition-all duration-500" style={{ width: `${(participants.filter(p => p.status === 'completed').length / (leadLimit || 1)) * 100}%` }}></div>
                 </div>
                 <span className="text-[8px] font-black text-white uppercase tracking-widest animate-pulse drop-shadow-sm">{logs[0]}</span>
               </div>
