@@ -22,18 +22,18 @@ const Header: React.FC<HeaderProps> = ({
   userLogo
 }) => {
   return (
-    <header className="h-16 shrink-0 flex items-center px-6 lg:px-12 bg-white/70 backdrop-blur-3xl sticky top-0 z-[60] border-b border-slate-100">
+    <header className="h-16 shrink-0 flex items-center px-6 lg:px-14 bg-white/70 backdrop-blur-3xl sticky top-0 z-[60] border-b border-slate-100">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center font-black text-sm shadow-xl shadow-slate-200/50">DV</div>
         <div className="flex flex-col leading-none">
           <span className="font-black text-sm tracking-tight text-slate-900 uppercase">AI <span className="text-blue-600">DeepVera</span></span>
-          <span className="text-[7px] font-black text-slate-300 uppercase tracking-[0.4em] mt-0.5">Neural_Network</span>
+          <span className="text-[7px] font-black text-slate-300 uppercase tracking-[0.4em] mt-0.5">Global_Intelligence</span>
         </div>
       </div>
       
       <div className="flex-1"></div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-8">
         <div 
           onClick={onBuyTokens}
           className="flex items-center gap-3 bg-white px-4 py-1.5 rounded-xl border border-slate-100 group cursor-pointer hover:border-blue-200 hover:shadow-xl hover:shadow-blue-50/50 transition-all"
@@ -45,10 +45,10 @@ const Header: React.FC<HeaderProps> = ({
            <div className="w-6 h-6 rounded-full bg-slate-900 group-hover:bg-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-md transition-all">+</div>
         </div>
 
-        <div className="flex items-center gap-4 pl-6 border-l border-slate-100">
+        <div className="flex items-center gap-4 pl-8 border-l border-slate-100">
           <div className="text-right hidden sm:block">
             <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest block mb-0.5 truncate max-w-[100px]">{userName || 'Kullanıcı'}</span>
-            <button onClick={onLogout} className="text-[7px] font-black text-red-500 uppercase tracking-widest hover:text-slate-900 transition-all">Çıkış Yap</button>
+            <button onClick={onLogout} className="text-[7px] font-black text-red-500 uppercase tracking-widest hover:text-slate-900 transition-all">Sign_Out</button>
           </div>
           <div 
             onClick={onOpenSettings}

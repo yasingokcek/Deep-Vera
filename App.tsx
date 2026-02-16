@@ -15,19 +15,20 @@ const SECTORS = [
   { id: 'retail', label: 'Perakende & Mağazacılık', icon: '🛒' },
   { id: 'fashion', label: 'Moda & Tekstil', icon: '👗' },
   { id: 'fmcg', label: 'Hızlı Tüketim (FMCG)', icon: '📦' },
-  { id: 'e-commerce', label: 'E-Ticaret Devleri', icon: '🌐' },
-  { id: 'tech', label: 'Yazılım & Yapay Zeka', icon: '🤖' },
+  { id: 'e-commerce', label: 'E-Ticaret & Pazaryeri', icon: '🌐' },
+  { id: 'tech', label: 'Yazılım & BT', icon: '🤖' },
   { id: 'finance', label: 'Fintek & Bankacılık', icon: '💎' },
   { id: 'health', label: 'Sağlık & Medikal', icon: '🧬' },
   { id: 'energy', label: 'Yenilenebilir Enerji', icon: '🔋' },
   { id: 'logistics', label: 'Akıllı Lojistik', icon: '🚚' },
-  { id: 'food', label: 'Gıda & Gastronomi', icon: '🍽️' },
-  { id: 'construction', label: 'İnşaat & Emlak', icon: '🏗️' },
-  { id: 'auto', label: 'Otomotiv & Elektrikli', icon: '⚡' },
+  { id: 'auto', label: 'Otomotiv', icon: '🚗' },
 ];
+
+const LIMIT_OPTIONS = [10, 25, 50, 100, 250];
 
 const LOCATION_DATA: Record<string, string[]> = {
   "Türkiye": ["Tüm Şehirler", "İstanbul", "Ankara", "İzmir", "Bursa", "Antalya", "Kocaeli", "Gaziantep"],
+  "Avustralya": ["Tüm Bölgeler", "Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Canberra", "Gold Coast"],
   "ABD": ["New York", "California", "Texas", "Florida", "Washington"],
   "Almanya": ["Berlin", "Munich", "Hamburg", "Frankfurt", "Stuttgart"],
   "İngiltere": ["London", "Manchester", "Birmingham", "Leeds"],
@@ -59,6 +60,7 @@ const App: React.FC = () => {
   const [selectedCity, setSelectedCity] = useState<string>("Tüm Şehirler");
   const [selectedSector, setSelectedSector] = useState<string>('retail');
   const [queryContext, setQueryContext] = useState<string>('');
+  const [leadLimit, setLeadLimit] = useState<number>(25);
   const [status, setStatus] = useState<AppStatus>(AppStatus.IDLE);
   const [searchStep, setSearchStep] = useState<number>(0);
   const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
@@ -85,18 +87,18 @@ const App: React.FC = () => {
       const activeQuery = queryContext.trim() || `${sectorLabel} sektöründeki firmalar - ${locationLabel}`;
 
       setSearchStep(2);
-      const rawResults = await extractLeadList(activeQuery, selectedSector, locationLabel, 24, participants.map(p => p.name));
+      const rawResults = await extractLeadList(activeQuery, selectedSector, locationLabel, leadLimit, participants.map(p => p.name));
       
       if (!rawResults || rawResults.length === 0) { 
         setStatus(AppStatus.IDLE); 
         return; 
       }
 
-      const initialLeads: Participant[] = rawResults.slice(0, 24).map(r => ({
+      const initialLeads: Participant[] = rawResults.slice(0, leadLimit).map(r => ({
         id: `p-${Date.now()}-${Math.random()}`,
         name: r.name || 'Şirket',
         website: r.website || '',
-        email: 'İstihbarat Toplanıyor...',
+        email: 'Analiz Başlıyor...',
         phone: '...',
         industry: sectorLabel,
         location: r.location || locationLabel,
@@ -113,7 +115,7 @@ const App: React.FC = () => {
         if (stopAnalysisRef.current) break;
         const current = initialLeads[i];
         try {
-          await sleep(100);
+          await sleep(150);
           const intel = await findCompanyIntel(current.name, current.website, selectedSector, user!);
           const updatedLead = { ...current, ...intel, status: 'completed' as const };
           setParticipants(prev => prev.map(p => p.id === current.id ? updatedLead : p));
@@ -131,15 +133,15 @@ const App: React.FC = () => {
   };
 
   const steps = [
-    { label: "INIT_NODE", icon: "🌐" },
-    { label: "CRAWL_DATA", icon: "📡" },
-    { label: "NEURAL_LINK", icon: "🧠" },
-    { label: "SOCIAL_SYNC", icon: "📱" },
-    { label: "AI_DRAFT", icon: "✉️" }
+    { label: "INITIALIZE", icon: "🚀" },
+    { label: "CRAWLING", icon: "📡" },
+    { label: "NEURAL_SYNC", icon: "🧠" },
+    { label: "SOCIAL_RESOLVE", icon: "📱" },
+    { label: "AI_STRATEGY", icon: "✉️" }
   ];
 
   return (
-    <div className="h-screen bg-[#fcfcfd] flex flex-col overflow-hidden font-sans text-slate-900 selection:bg-blue-600/10">
+    <div className="h-screen bg-[#f8fafc] flex flex-col overflow-hidden font-sans text-slate-900 selection:bg-blue-600/10">
       {view === 'landing' ? (
         <LandingPage onGetStarted={() => setView('login')} />
       ) : view === 'login' ? (
@@ -154,12 +156,12 @@ const App: React.FC = () => {
             onOpenSettings={() => setIsIdentityModalOpen(true)}
           />
           
-          <main className="flex-1 flex flex-col overflow-hidden px-6 lg:px-12 py-4 gap-4">
-            {/* Command Hub */}
-            <div className="bg-white border border-slate-100 rounded-[2rem] p-4 shadow-[0_4px_25px_-10px_rgba(0,0,0,0.03)] shrink-0 transition-all">
-               <div className="flex flex-col lg:flex-row items-center gap-3 relative z-10">
+          <main className="flex-1 flex flex-col overflow-hidden px-6 lg:px-14 py-4 gap-4">
+            {/* Ultra-Minimal Command Dock */}
+            <div className="bg-white border border-slate-200/50 rounded-[2.5rem] p-4 shadow-[0_4px_20px_rgb(0,0,0,0.03)] shrink-0">
+               <div className="flex flex-col lg:flex-row items-center gap-3">
                   <div className="w-full lg:flex-1 relative group">
-                     <div className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-600 opacity-40 group-focus-within:opacity-100 transition-all">
+                     <div className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-600 opacity-30 group-focus-within:opacity-100 transition-all">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                      </div>
                      <input 
@@ -167,7 +169,7 @@ const App: React.FC = () => {
                        value={queryContext}
                        onChange={(e) => setQueryContext(e.target.value)}
                        placeholder="Fuar URL'si veya Anahtar Kelime (Perakende odaklı arama)..."
-                       className="w-full h-12 pl-12 pr-6 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-semibold outline-none focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-slate-400"
+                       className="w-full h-12 pl-12 pr-6 bg-slate-50/50 border border-slate-100 rounded-xl text-[12px] font-semibold outline-none focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-50/50 transition-all"
                      />
                   </div>
 
@@ -175,16 +177,16 @@ const App: React.FC = () => {
                     <select 
                       value={selectedSector} 
                       onChange={(e) => setSelectedSector(e.target.value)} 
-                      className="h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest outline-none min-w-[150px] cursor-pointer hover:bg-white"
+                      className="h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest outline-none min-w-[150px] cursor-pointer hover:bg-white transition-all"
                     >
                       {SECTORS.map(s => <option key={s.id} value={s.id}>{s.icon} {s.label}</option>)}
                     </select>
 
-                    <div className="flex gap-2 flex-1 lg:flex-none">
+                    <div className="flex gap-2">
                       <select 
                         value={selectedCountry} 
                         onChange={(e) => { setSelectedCountry(e.target.value); setSelectedCity(LOCATION_DATA[e.target.value][0]); }} 
-                        className="h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest outline-none min-w-[110px]"
+                        className="h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest outline-none min-w-[110px] cursor-pointer"
                       >
                         {Object.keys(LOCATION_DATA).map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
@@ -192,9 +194,18 @@ const App: React.FC = () => {
                       <select 
                         value={selectedCity} 
                         onChange={(e) => setSelectedCity(e.target.value)} 
-                        className="h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest outline-none min-w-[120px]"
+                        className="h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest outline-none min-w-[120px] cursor-pointer"
                       >
                         {LOCATION_DATA[selectedCountry].map(city => <option key={city} value={city}>{city}</option>)}
+                      </select>
+                      
+                      <select 
+                        value={leadLimit} 
+                        onChange={(e) => setLeadLimit(Number(e.target.value))} 
+                        className="h-12 bg-blue-50/40 border border-blue-100 text-blue-600 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest outline-none min-w-[85px] cursor-pointer hover:bg-blue-100/50 transition-colors"
+                        title="Limit Belirle"
+                      >
+                        {LIMIT_OPTIONS.map(opt => <option key={opt} value={opt}>{opt} LMT</option>)}
                       </select>
                     </div>
 
@@ -211,18 +222,18 @@ const App: React.FC = () => {
                   </div>
                </div>
 
-               {/* Digital Neural HUD */}
+               {/* Cyber-HUD v5 */}
                {status !== AppStatus.IDLE && (
-                 <div className="mt-4 pt-4 border-t border-slate-50 animate-fade-in">
+                 <div className="mt-5 pt-5 border-t border-slate-100 animate-fade-in">
                     <div className="flex justify-between items-center mb-4 px-2">
                        <div className="flex items-center gap-2">
                           <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-ping"></div>
-                          <span className="text-[8px] font-black text-blue-600 uppercase tracking-[0.4em]">Nöral Arama Protokolü Aktif</span>
+                          <span className="text-[8px] font-black text-blue-600 uppercase tracking-[0.4em]">NEURAL_ENGINE_RUNNING</span>
                        </div>
                        <div className="flex gap-4 text-[7px] font-bold text-slate-300 uppercase tracking-widest font-mono">
-                          <span>LATENCY: 12ms</span>
-                          <span>ENTITIES: {participants.length}</span>
-                          <span className="text-emerald-500">SECURE_LINK</span>
+                          <span>CORE: ACTIVE</span>
+                          <span>LOAD: {participants.length} / {leadLimit}</span>
+                          <span className="text-emerald-500">READY_TO_RESOLVE</span>
                        </div>
                     </div>
                     <div className="flex items-center justify-between relative px-2">
