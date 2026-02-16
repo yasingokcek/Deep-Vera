@@ -99,12 +99,10 @@ const App: React.FC = () => {
       alert("Dışa aktarılacak veri bulunamadı.");
       return;
     }
-    
     const headers = ["Şirket Adı", "Web Sitesi", "E-posta", "Telefon", "Sektör", "Konum", "LinkedIn", "Instagram", "X", "Buzkıran", "Konu", "Mesaj"];
     const rows = participants.map(p => [
       p.name, p.website, p.email, p.phone, p.industry, p.location, p.linkedin || '', p.instagram || '', p.twitter || '', p.icebreaker || '', p.emailSubject || '', (p.emailDraft || '').replace(/\n/g, ' [P] ')
     ]);
-    
     const csvContent = [headers.join(";"), ...rows.map(row => row.map(cell => `"${(cell || "").toString().replace(/"/g, '""')}"`).join(";"))].join("\n");
     const BOM = "\uFEFF";
     const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -180,34 +178,49 @@ const App: React.FC = () => {
         <LoginForm onLogin={(u) => { setUser(u); setView('dashboard'); }} onCancel={() => setView('landing')} />
       ) : (
         <>
-          <header className="h-20 shrink-0 flex items-center px-6 border-b border-slate-100 bg-white sticky top-0 z-[60] shadow-sm">
-            <div className="flex items-center gap-4 min-w-fit">
-              <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-base shadow-lg">DV</div>
-              <div className="hidden lg:flex flex-col leading-none">
-                <span className="font-black text-base tracking-tighter uppercase">DeepVera <span className="text-blue-600">AI</span></span>
-                <span className="text-[6px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">İstihbarat Merkezi</span>
+          {/* RESPONSIVE HEADER - MOBİL UYUMLU */}
+          <header className="min-h-20 h-auto sm:h-20 shrink-0 flex flex-col sm:flex-row items-center px-4 sm:px-6 py-4 sm:py-0 border-b border-slate-100 bg-white sticky top-0 z-[60] shadow-sm gap-4 sm:gap-0">
+            <div className="flex items-center justify-between w-full sm:w-auto gap-4 min-w-fit">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-sm sm:text-base shadow-lg">DV</div>
+                <div className="flex flex-col leading-none">
+                  <span className="font-black text-sm sm:text-base tracking-tighter uppercase">DeepVera <span className="text-blue-600">AI</span></span>
+                  <span className="text-[6px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">İstihbarat Merkezi</span>
+                </div>
+              </div>
+
+              {/* Mobil kullanıcı menüsü */}
+              <div className="flex sm:hidden items-center gap-3">
+                <div className="flex flex-col items-end leading-none cursor-pointer" onClick={() => setIsPaymentModalOpen(true)}>
+                  <span className="text-xs font-black text-blue-600">{tokenBalance}</span>
+                  <span className="text-[6px] font-black text-slate-400 uppercase tracking-widest">KREDİ</span>
+                </div>
+                <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white text-[10px] font-black" onClick={() => { setUser(null); setView('landing'); }}>
+                  {user?.name?.charAt(0)}
+                </div>
               </div>
             </div>
 
             <div className="mx-6 h-8 w-px bg-slate-100 hidden sm:block"></div>
 
-            <div className="flex-1 flex items-center gap-2 max-w-7xl overflow-hidden">
-              <div className="flex-[2] relative group min-w-[150px]">
+            {/* ARAMA KONTROLLERİ - MOBİLDE WRAP YAPAR */}
+            <div className="flex-1 flex flex-col sm:flex-row items-center gap-3 w-full max-w-7xl overflow-hidden">
+              <div className="flex-1 relative group w-full min-w-0 sm:min-w-[150px]">
                 <input 
                   type="text"
                   value={queryContext}
                   onChange={(e) => setQueryContext(e.target.value)}
                   placeholder="URL veya anahtar kelime yapıştırın..."
-                  className="w-full h-11 pl-4 pr-4 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/30 transition-all shadow-inner"
+                  className="w-full h-11 pl-4 pr-4 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold outline-none focus:bg-white focus:border-blue-500 transition-all shadow-inner"
                 />
               </div>
 
-              <div className={`flex items-center gap-2 transition-all ${isQueryActive ? 'opacity-30 grayscale pointer-events-none' : ''}`}>
+              <div className={`flex items-center gap-2 w-full sm:w-auto transition-all ${isQueryActive ? 'opacity-30 grayscale pointer-events-none' : ''}`}>
                 <select 
                   value={selectedSector} 
                   onChange={(e) => setSelectedSector(e.target.value)} 
                   disabled={isQueryActive}
-                  className="h-11 bg-slate-50 border border-slate-100 rounded-xl px-3 text-[9px] font-black uppercase tracking-widest outline-none hover:border-slate-300 transition-all cursor-pointer w-40"
+                  className="h-11 bg-slate-50 border border-slate-100 rounded-xl px-2 text-[9px] font-black uppercase tracking-widest outline-none hover:border-slate-300 transition-all cursor-pointer flex-1 sm:w-32"
                 >
                   {SECTORS.map(s => <option key={s.id} value={s.id}>{s.icon} {s.label}</option>)}
                 </select>
@@ -216,7 +229,7 @@ const App: React.FC = () => {
                   value={selectedCity} 
                   onChange={(e) => setSelectedCity(e.target.value)} 
                   disabled={isQueryActive}
-                  className="h-11 bg-slate-50 border border-slate-100 rounded-xl px-3 text-[9px] font-black uppercase tracking-widest outline-none hover:border-slate-300 transition-all cursor-pointer w-48"
+                  className="h-11 bg-slate-50 border border-slate-100 rounded-xl px-2 text-[9px] font-black uppercase tracking-widest outline-none hover:border-slate-300 transition-all cursor-pointer flex-1 sm:w-32"
                 >
                   {STATES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
@@ -227,32 +240,36 @@ const App: React.FC = () => {
                   onChange={(e) => setTargetCityName(e.target.value)}
                   disabled={isQueryActive}
                   placeholder="İlçe/Semt"
-                  className="h-11 px-3 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold outline-none w-28"
+                  className="h-11 px-3 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold outline-none flex-1 sm:w-24"
                 />
               </div>
 
-              <div className="flex flex-col items-center justify-center px-3 bg-slate-50 rounded-xl border border-slate-200 h-11 min-w-[70px] shadow-inner group">
-                <span className="text-[7px] font-black text-slate-400 uppercase mb-0.5 tracking-widest">ADET</span>
-                <input 
-                  type="number"
-                  value={leadLimit}
-                  onChange={(e) => setLeadLimit(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full bg-transparent text-[12px] font-black text-center outline-none text-blue-600 focus:text-slate-900"
-                  min="1"
-                  max="500"
-                />
-              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                {/* ADET ALANI */}
+                <div className="flex flex-col items-center justify-center px-3 bg-slate-50 rounded-xl border border-slate-200 h-11 w-20 shrink-0 shadow-inner group">
+                  <span className="text-[7px] font-black text-slate-400 uppercase mb-0.5 tracking-widest">ADET</span>
+                  <input 
+                    type="number"
+                    value={leadLimit}
+                    onChange={(e) => setLeadLimit(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-full bg-transparent text-[12px] font-black text-center outline-none text-blue-600 focus:text-slate-900"
+                    min="1"
+                  />
+                </div>
 
-              {status === AppStatus.IDLE ? (
-                <button onClick={startAnalysis} className="h-11 px-6 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] shadow-lg shadow-blue-100 hover:bg-slate-900 transition-all active:scale-95 flex items-center gap-2 shrink-0">🚀 BAŞLAT</button>
-              ) : (
-                <button onClick={() => { stopAnalysisRef.current = true; setStatus(AppStatus.IDLE); }} className="h-11 px-6 bg-red-600 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] shadow-lg shadow-red-100 animate-pulse shrink-0">⏹️ DURDUR</button>
-              )}
+                {/* BAŞLAT/DURDUR BUTONU - MOBİLDE GENİŞLER */}
+                {status === AppStatus.IDLE ? (
+                  <button onClick={startAnalysis} className="flex-1 sm:flex-none h-11 px-6 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] shadow-lg shadow-blue-100 hover:bg-slate-900 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0">🚀 BAŞLAT</button>
+                ) : (
+                  <button onClick={() => { stopAnalysisRef.current = true; setStatus(AppStatus.IDLE); }} className="flex-1 sm:flex-none h-11 px-6 bg-red-600 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] shadow-lg shadow-red-100 animate-pulse shrink-0">⏹️ DURDUR</button>
+                )}
+              </div>
             </div>
 
             <div className="mx-6 h-8 w-px bg-slate-100 hidden xl:block"></div>
 
-            <div className="flex items-center gap-4 shrink-0">
+            {/* Masaüstü kullanıcı menüsü */}
+            <div className="hidden sm:flex items-center gap-4 shrink-0">
               <div className="flex flex-col items-end leading-none cursor-pointer" onClick={() => setIsPaymentModalOpen(true)}>
                 <span className="text-xs font-black text-blue-600">{tokenBalance}</span>
                 <span className="text-[6px] font-black text-slate-400 uppercase tracking-widest">KREDİ</span>
@@ -265,41 +282,51 @@ const App: React.FC = () => {
           </header>
           
           <main className="flex-1 flex flex-col overflow-hidden">
-            {/* ARAMA SÜRECİ ÜST BARI - GELİŞMİŞ VERSİYON */}
+            {/* AKTİF TARAMA BARI */}
             {status !== AppStatus.IDLE && (
-              <div className="bg-[#00D1FF] px-8 py-3 flex justify-between items-center shadow-[0_10px_30px_rgba(0,209,255,0.2)] z-[55] border-b border-white/20 relative overflow-hidden">
+              <div className="bg-[#00D1FF] px-4 sm:px-8 py-3 flex justify-between items-center shadow-[0_10px_30px_rgba(0,209,255,0.2)] z-[55] border-b border-white/20 relative overflow-hidden shrink-0">
                 <div className="absolute inset-0 scan-line opacity-30 pointer-events-none"></div>
-                <div className="flex items-center gap-4 relative z-10">
-                  <div className="flex gap-1.5">
-                    <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
-                    <div className="w-2 h-2 bg-white/40 rounded-full"></div>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-white uppercase tracking-[0.3em] drop-shadow-md">Nöral İstihbarat Aktif</span>
-                    <span className="text-[7px] font-bold text-white/70 uppercase tracking-widest mt-0.5">Global Veri Madenciliği Yürütülüyor</span>
-                  </div>
+                <div className="flex items-center gap-2 sm:gap-4 relative z-10">
+                  <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
+                  <span className="text-[8px] sm:text-[10px] font-black text-white uppercase tracking-[0.2em] sm:tracking-[0.3em] drop-shadow-md">Nöral İstihbarat Aktif</span>
                 </div>
-                
-                <div className="flex-1 max-w-xl mx-12 flex flex-col gap-2 relative z-10">
-                  <div className="w-full h-1.5 bg-white/30 rounded-full overflow-hidden">
+                <div className="flex-1 max-w-xl mx-4 sm:mx-12 flex flex-col gap-1 sm:gap-2 relative z-10">
+                  <div className="w-full h-1 sm:h-1.5 bg-white/30 rounded-full overflow-hidden">
                     <div className="h-full bg-white shadow-[0_0_15px_white] transition-all duration-700 ease-out" style={{ width: `${(participants.filter(p => p.status === 'completed').length / (leadLimit || 1)) * 100}%` }}></div>
                   </div>
                   <div className="flex justify-between items-center px-1">
-                    <span className="text-[8px] font-black text-white uppercase tracking-widest">{logs[0]}</span>
-                    <span className="text-[8px] font-black text-white uppercase tracking-widest">%{Math.round((participants.filter(p => p.status === 'completed').length / (leadLimit || 1)) * 100)} Tamamlandı</span>
+                    <span className="text-[6px] sm:text-[8px] font-black text-white uppercase tracking-widest truncate max-w-[150px]">{logs[0]}</span>
+                    <span className="text-[6px] sm:text-[8px] font-black text-white uppercase tracking-widest">%{Math.round((participants.filter(p => p.status === 'completed').length / (leadLimit || 1)) * 100)}</span>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-4 relative z-10">
-                   <div className="flex flex-col items-end">
-                      <span className="text-[10px] font-black text-white uppercase tracking-widest">{participants.filter(p => p.status === 'completed').length} / {leadLimit}</span>
-                      <span className="text-[7px] font-bold text-white/50 uppercase tracking-widest">BULUNAN LİSTE</span>
-                   </div>
+                <div className="relative z-10 hidden sm:block">
+                   <span className="text-[10px] font-black text-white uppercase tracking-widest">{participants.filter(p => p.status === 'completed').length} / {leadLimit}</span>
                 </div>
               </div>
             )}
 
-            <div className="flex-1 relative max-w-[1600px] mx-auto w-full px-6 py-6 overflow-y-auto no-scrollbar flex flex-col gap-6">
+            <div className="flex-1 relative max-w-[1600px] mx-auto w-full px-4 sm:px-6 py-6 overflow-y-auto no-scrollbar flex flex-col gap-6">
+              
+              {/* SİSTEM İŞLEYİŞ REHBERİ (4 Aşamalı Görsel) */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-2 shrink-0">
+                 {[
+                   { step: "01", title: "HEDEF", icon: "🎯", desc: "URL/Sektör" },
+                   { step: "02", title: "TARAMA", icon: "🔍", desc: "Veri Madeni" },
+                   { step: "03", title: "ANALİZ", icon: "🧠", desc: "Ayrıştırma" },
+                   { step: "04", title: "TEKLİF", icon: "✉️", desc: "B2B Taslak" }
+                 ].map((item, idx) => (
+                   <div key={idx} className="bg-white border border-slate-100 p-3 sm:p-5 rounded-2xl sm:rounded-[2rem] flex items-center gap-2 sm:gap-4 shadow-sm group hover:border-blue-500 transition-all">
+                      <div className="w-8 h-8 sm:w-12 sm:h-12 bg-slate-50 text-slate-900 rounded-xl sm:rounded-2xl flex items-center justify-center text-sm sm:text-xl shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-all">
+                         {item.icon}
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                         <h4 className="text-[8px] sm:text-[10px] font-black text-slate-900 uppercase tracking-tighter leading-none mb-1 truncate">{item.title}</h4>
+                         <p className="text-[6px] sm:text-[8px] font-bold text-slate-400 uppercase tracking-widest truncate">{item.desc}</p>
+                      </div>
+                   </div>
+                 ))}
+              </div>
+
               <DataTable 
                 participants={participants} 
                 status={status} 
