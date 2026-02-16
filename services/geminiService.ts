@@ -86,14 +86,16 @@ export const findCompanyIntel = async (
   name: string, 
   website?: string, 
   sector?: string,
-  sender?: Partial<User>,
+  sender?: User,
   onRetry?: (msg: string) => void
 ): Promise<Partial<Participant>> => {
   const ai = getAI();
   
-  const senderContext = `GÖNDERİCİ BİLGİLERİ:
-- Şirket: ${sender?.companyName || 'DeepVera AI'}
-- Uzmanlık Alanı: ${sender?.companyDescription || 'Yapay Zeka ve Veri Madenciliği'}
+  const senderContext = `GÖNDERİCİ (BİZİM ŞİRKETİMİZ) DETAYLARI:
+- Şirket Adı: ${sender?.companyName || 'DeepVera AI'}
+- Ana Faaliyet: ${sender?.mainActivity || sender?.companyDescription || 'Yapay Zeka Destekli B2B Satış Otomasyonu'}
+- Rakiplerimiz: ${sender?.competitorsInfo || 'Genel Sektör'}
+- Hedef Kitlemiz: ${sender?.targetAudience || 'Karar Vericiler'}
 - Yetkili: ${sender?.authorizedPerson || 'Satış Direktörü'}`;
 
   return callWithRetry(async () => {
@@ -104,20 +106,14 @@ export const findCompanyIntel = async (
 
       GÖREV: 
       1. Bu şirketin kurumsal iletişim bilgilerini (E-posta, Tel) bul.
-      2. Şirketin SOSYAL MEDYA profillerini (LinkedIn, Instagram, Twitter/X) bul. LinkedIn Şirket sayfası, Instagram işletme sayfası ve X profili için tam URL getir.
-      3. Perakende odaklı, kişiselleştirilmiş, ikna edici bir B2B e-posta taslağı hazırla.
+      2. Sosyal medya profillerini (LinkedIn, Instagram, Twitter/X) tam URL olarak çıkar.
+      3. Gönderen şirketin çözümlerini (Faaliyet: ${sender?.mainActivity}), hedef şirketin ihtiyaçlarıyla ilişkilendiren, rakip analizi içeren (Rakiplerimiz: ${sender?.competitorsInfo}) çok güçlü bir B2B e-posta taslağı yaz.
 
-      SOSYAL MEDYA KRİTERLERİ: 
-      - linkedin: linkedin.com/company/... formatında.
-      - instagram: instagram.com/... formatında.
-      - twitter: twitter.com/... formatında.
-
-      E-POSTA YAZIM KURALLARI:
-      - Ton: Kurumsal ve profesyonel Türkçe.
-      - Paragraf 1: Etkileyici ve sektörel bir giriş.
-      - Paragraf 2: Değer önerisi (Perakende verimliliği odaklı).
-      - Paragraf 3: Eylem çağrısı.
-      - İmza öncesine [COMPANY_LOGO] etiketini yerleştir.`,
+      E-POSTA STRATEJİSİ:
+      - Ton: Kurumsal ve otoriter.
+      - Paragraf 1: Hedef şirketin son başarılarına veya sektördeki yerine atıf yapan kişisel giriş.
+      - Paragraf 2: "Bizim çözümümüz neden rakiplerimizden (${sender?.competitorsInfo}) daha iyi?" sorusuna yanıt veren bir değer önerisi.
+      - Paragraf 3: Randevu/Demo talebi.`,
       config: { 
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",

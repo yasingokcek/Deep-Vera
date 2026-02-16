@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User } from '../types';
 
 interface Props {
@@ -7,24 +7,83 @@ interface Props {
   onClose: () => void;
 }
 
+interface Email {
+  id: string;
+  from: string;
+  subject: string;
+  date: string;
+  snippet: string;
+  read: boolean;
+}
+
 const GmailCenter: React.FC<Props> = ({ user, onClose }) => {
   const [activeTab, setActiveTab] = useState<'inbox' | 'sent' | 'drafts'>('inbox');
-  
-  const mockEmails = [
-    { id: 1, from: 'Ahmet Yılmaz (LC Waikiki)', subject: 'Yeni Sezon Teklifiniz Hakkında', date: '10:45', snippet: 'Gönderdiğiniz yapay zeka destekli verimlilik raporunu inceledik...', read: false },
-    { id: 2, from: 'DeepVera AI', subject: 'Haftalık İstihbarat Özeti', date: '09:12', snippet: 'Geçen hafta Sidney bölgesinde 42 yeni potansiyel müşteri bulundu.', read: true },
-    { id: 3, from: 'Global Lojistik A.Ş.', subject: 'Fiyat Teklifi Talebi', date: 'Dün', snippet: 'Fuar katılımcıları listenizdeki firmalara özel lojistik çözümleri için...', read: true },
-  ];
+  const [emails, setEmails] = useState<Email[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user?.googleAccessToken) {
+      fetchRealEmails();
+    }
+  }, [user, activeTab]);
+
+  const fetchRealEmails = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const labelMap = { inbox: 'INBOX', sent: 'SENT', drafts: 'DRAFT' };
+      const response = await fetch(
+        `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=10&q=label:${labelMap[activeTab]}`,
+        { headers: { Authorization: `Bearer ${user?.googleAccessToken}` } }
+      );
+
+      if (!response.ok) throw new Error('Gmail API hatası. Lütfen tekrar giriş yapın.');
+
+      const data = await response.json();
+      if (!data.messages) {
+        setEmails([]);
+        setLoading(false);
+        return;
+      }
+
+      const emailDetails = await Promise.all(
+        data.messages.map(async (msg: any) => {
+          const detailRes = await fetch(
+            `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msg.id}`,
+            { headers: { Authorization: `Bearer ${user?.googleAccessToken}` } }
+          );
+          const detail = await detailRes.json();
+          
+          const getHeader = (name: string) => detail.payload.headers.find((h: any) => h.name === name)?.value || '';
+          
+          return {
+            id: detail.id,
+            from: getHeader('From'),
+            subject: getHeader('Subject'),
+            date: new Date(getHeader('Date')).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            snippet: detail.snippet,
+            read: !detail.labelIds.includes('UNREAD')
+          };
+        })
+      );
+
+      setEmails(emailDetails);
+    } catch (err: any) {
+      setError(err.message);
+    }
+    setLoading(false);
+  };
 
   return (
     <div className="fixed inset-0 z-[150] bg-[#f8fafc] flex flex-col animate-fade-in overflow-hidden">
       {/* Header */}
       <div className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-10 shrink-0">
          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center text-lg font-black shadow-sm">M</div>
+            <div className="w-10 h-10 bg-red-600 text-white rounded-xl flex items-center justify-center text-lg font-black shadow-lg">M</div>
             <div>
                <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight">Gmail Komuta Merkezi</h2>
-               <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.3em]">{user?.email}</p>
+               <p className="text-[8px] font-black text-blue-500 uppercase tracking-[0.3em]">Gerçek Zamanlı Senkronizasyon: {user?.email}</p>
             </div>
          </div>
          <button onClick={onClose} className="w-10 h-10 bg-slate-50 hover:bg-slate-900 hover:text-white rounded-xl flex items-center justify-center transition-all text-slate-400 text-xl font-bold">&times;</button>
@@ -36,10 +95,9 @@ const GmailCenter: React.FC<Props> = ({ user, onClose }) => {
             <button className="w-full h-12 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest mb-6 shadow-xl shadow-blue-100 hover:scale-105 transition-all">Yeni Mesaj Yaz</button>
             
             {[
-               { id: 'inbox', label: 'Gelen Kutusu', icon: '📥', count: 3 },
-               { id: 'sent', label: 'Gönderilenler', icon: '📤', count: 0 },
-               { id: 'drafts', label: 'Taslaklar', icon: '📝', count: 12 },
-               { id: 'starred', label: 'Yıldızlılar', icon: '⭐', count: 0 }
+               { id: 'inbox', label: 'Gelen Kutusu', icon: '📥' },
+               { id: 'sent', label: 'Gönderilenler', icon: '📤' },
+               { id: 'drafts', label: 'Taslaklar', icon: '📝' }
             ].map(item => (
                <button 
                  key={item.id}
@@ -50,40 +108,58 @@ const GmailCenter: React.FC<Props> = ({ user, onClose }) => {
                      <span className="text-sm">{item.icon}</span>
                      <span className="text-[10px] font-black uppercase tracking-widest">{item.label}</span>
                   </div>
-                  {item.count > 0 && <span className={`text-[8px] font-black px-2 py-0.5 rounded-full ${activeTab === item.id ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>{item.count}</span>}
                </button>
             ))}
 
-            <div className="mt-auto p-6 bg-blue-50/50 rounded-3xl border border-blue-100">
-               <span className="text-[8px] font-black text-blue-600 uppercase tracking-widest mb-2 block">AI Gücü Aktif</span>
-               <p className="text-[9px] text-blue-800 font-bold leading-relaxed italic">DeepVera tüm e-postalarınızı analiz ederek en kritik olanları en üste taşır.</p>
+            <div className="mt-auto p-6 bg-slate-900 rounded-[2rem] border border-blue-500/30">
+               <span className="text-[8px] font-black text-blue-400 uppercase tracking-widest mb-2 block">Operasyonel Durum</span>
+               <p className="text-[9px] text-white/70 font-bold leading-relaxed italic">
+                 {user?.googleAccessToken ? 'Google API Yetkisi Alındı. Gerçek veriler listeleniyor.' : 'Demo modu aktif. Gerçek veriler için Gmail ile giriş yapın.'}
+               </p>
             </div>
          </div>
 
          {/* Content Area */}
          <div className="flex-1 bg-slate-50/30 flex flex-col overflow-hidden">
             <div className="p-8 flex-1 overflow-y-auto custom-scrollbar">
-               <div className="space-y-3">
-                  {mockEmails.map(email => (
-                     <div key={email.id} className={`p-6 bg-white border rounded-[2rem] flex items-center gap-6 cursor-pointer hover:shadow-xl transition-all group ${!email.read ? 'border-blue-200 ring-1 ring-blue-50 shadow-md' : 'border-slate-100'}`}>
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${!email.read ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
-                           {email.from.charAt(0)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                           <div className="flex justify-between items-center mb-1">
-                              <h4 className={`text-[11px] font-black uppercase truncate ${!email.read ? 'text-slate-900' : 'text-slate-400'}`}>{email.from}</h4>
-                              <span className="text-[9px] font-bold text-slate-300">{email.date}</span>
+               {loading ? (
+                  <div className="h-full flex flex-col items-center justify-center opacity-40 animate-pulse">
+                     <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                     <span className="text-[10px] font-black uppercase tracking-[0.4em]">Gmail Kutusu Taranıyor...</span>
+                  </div>
+               ) : error ? (
+                  <div className="h-full flex flex-col items-center justify-center p-20 text-center">
+                     <div className="text-4xl mb-4">⚠️</div>
+                     <h3 className="text-sm font-black text-slate-900 uppercase">{error}</h3>
+                     <p className="text-[9px] font-bold text-slate-400 mt-2">Token süresi dolmuş olabilir. Lütfen çıkış yapıp tekrar Gmail ile bağlanın.</p>
+                  </div>
+               ) : emails.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center opacity-30 text-center">
+                     <div className="text-4xl mb-4">📭</div>
+                     <h3 className="text-sm font-black text-slate-900 uppercase">E-posta Bulunamadı</h3>
+                  </div>
+               ) : (
+                  <div className="space-y-3">
+                     {emails.map(email => (
+                        <div key={email.id} className={`p-6 bg-white border rounded-[2rem] flex items-center gap-6 cursor-pointer hover:shadow-xl transition-all group ${!email.read ? 'border-blue-200 ring-1 ring-blue-50 shadow-md' : 'border-slate-100'}`}>
+                           <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${!email.read ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                              {email.from.charAt(0)}
                            </div>
-                           <h5 className="text-[10px] font-black text-slate-700 mb-1">{email.subject}</h5>
-                           <p className="text-[10px] text-slate-400 truncate font-medium">{email.snippet}</p>
+                           <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-center mb-1">
+                                 <h4 className={`text-[10px] font-black uppercase truncate ${!email.read ? 'text-slate-900' : 'text-slate-400'}`}>{email.from}</h4>
+                                 <span className="text-[9px] font-bold text-slate-300">{email.date}</span>
+                              </div>
+                              <h5 className="text-[10px] font-black text-slate-700 mb-1">{email.subject}</h5>
+                              <p className="text-[9px] text-slate-400 truncate font-medium">{email.snippet}</p>
+                           </div>
+                           <div className="opacity-0 group-hover:opacity-100 flex gap-2 transition-all">
+                              <button className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black uppercase hover:bg-blue-600 hover:text-white transition-all">Yanıtla</button>
+                           </div>
                         </div>
-                        <div className="opacity-0 group-hover:opacity-100 flex gap-2 transition-all">
-                           <button className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:text-blue-600">Reply</button>
-                           <button className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:text-red-500">Trash</button>
-                        </div>
-                     </div>
-                  ))}
-               </div>
+                     ))}
+                  </div>
+               )}
             </div>
          </div>
       </div>

@@ -40,6 +40,10 @@ export interface User {
   n8nWebhookUrl?: string;
   isGmailConnected?: boolean;
   googleAccessToken?: string;
+  // New strategic fields for AI context
+  mainActivity?: string;
+  competitorsInfo?: string;
+  targetAudience?: string;
 }
 
 export type ViewState = 'landing' | 'login' | 'dashboard' | 'admin' | 'gmail_center';
