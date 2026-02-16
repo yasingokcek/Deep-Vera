@@ -293,7 +293,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             <button onClick={onGetStarted} className="px-20 py-8 bg-white text-blue-600 rounded-[2.5rem] font-black text-xl uppercase tracking-[0.2em] shadow-2xl hover:bg-slate-900 hover:text-white transition-all scale-100 hover:scale-105">
                Şimdi Ücretsiz Deneyin
             </button>
-            <p className="text-white/60 font-bold uppercase tracking-widest mt-12">Kredi kartı gerekmez • 1500 Ücretsiz Kredi Dahil</p>
+            <p className="text-white/60 font-bold uppercase tracking-widest mt-12">Kredi kartı gerekmez • 50 DV Token Dahil</p>
          </div>
       </section>
 
