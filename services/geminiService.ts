@@ -103,10 +103,13 @@ export const findCompanyIntel = async (
 
       GÖREV: 
       1. Bu şirketin kurumsal iletişim bilgilerini (E-posta, Tel) bul.
-      2. Şirketin SOSYAL MEDYA profillerini (LinkedIn, Instagram, Twitter/X) mutlaka bul ve URL olarak getir.
+      2. Şirketin SOSYAL MEDYA profillerini (LinkedIn, Instagram, Twitter/X) MUTLAKA bul ve URL olarak getir. Sosyal medya verileri bu operasyon için kritiktir.
       3. Kişiselleştirilmiş, ikna edici ve profesyonel bir B2B e-posta taslağı hazırla.
 
-      SOSYAL MEDYA ÖNCELİĞİ: Şirketin resmi sosyal medya hesaplarını doğrula. Yanlış link getirme.
+      SOSYAL MEDYA PROTOKOLÜ: 
+      - LinkedIn, Instagram ve X (Twitter) profillerini araştır.
+      - Sadece şirkete ait resmi hesapları al.
+      - Linkleri tam URL (https://...) formatında ver.
 
       E-POSTA YAZIM KURALLARI (ZORUNLU):
       - Yapı: E-posta metni en az 3 paragraftan oluşmalıdır.

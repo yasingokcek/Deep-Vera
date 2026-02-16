@@ -168,6 +168,16 @@ const App: React.FC = () => {
                   <span className="text-[6px] font-black text-slate-400 uppercase tracking-[0.3em] mt-0.5">İstihbarat</span>
                 </div>
               </div>
+              
+              {/* Desktop Status Visual */}
+              {status !== AppStatus.IDLE && (
+                <div className="hidden lg:flex items-center gap-3 px-4 py-2 bg-blue-500/5 border border-blue-500/10 rounded-xl">
+                  <div className="flex gap-0.5">
+                    {[1,2,3].map(i => <div key={i} className="w-1 h-3 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: `${i*0.2}s`}}></div>)}
+                  </div>
+                  <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest">Nöral Sistem Aktif</span>
+                </div>
+              )}
 
               <div className="flex sm:hidden items-center gap-3">
                 <div className="flex flex-col items-end leading-none cursor-pointer" onClick={() => setIsPaymentModalOpen(true)}>
@@ -236,17 +246,20 @@ const App: React.FC = () => {
           
           <main className="flex-1 flex flex-col overflow-hidden">
             {status !== AppStatus.IDLE && (
-              <div className="bg-[#00D1FF] px-4 py-2 flex items-center justify-between shadow-lg z-[55] border-b border-white/10 shrink-0">
-                <div className="flex items-center gap-2 shrink-0">
+              <div className="bg-[#00D1FF] px-4 py-2 flex items-center justify-between shadow-lg z-[55] border-b border-white/10 shrink-0 overflow-hidden relative">
+                {/* Neural Scanning Animation */}
+                <div className="absolute inset-0 scan-line opacity-20 pointer-events-none"></div>
+                
+                <div className="flex items-center gap-2 shrink-0 relative z-10">
                   <div className="w-1.5 h-1.5 bg-white rounded-full animate-ping"></div>
-                  <span className="text-[8px] font-black text-white uppercase tracking-widest truncate">İSTİHBARAT TOPLANIYOR</span>
+                  <span className="text-[8px] font-black text-white uppercase tracking-widest truncate">NÖRAL TARAMA DEVREDE</span>
                 </div>
-                <div className="flex-1 px-4">
+                <div className="flex-1 px-4 relative z-10">
                   <div className="w-full h-1 bg-white/30 rounded-full overflow-hidden">
                     <div className="h-full bg-white shadow-sm" style={{ width: `${(participants.filter(p => p.status === 'completed').length / (leadLimit || 1)) * 100}%` }}></div>
                   </div>
                 </div>
-                <div className="shrink-0 text-[8px] font-black text-white">
+                <div className="shrink-0 text-[8px] font-black text-white relative z-10">
                    {participants.filter(p => p.status === 'completed').length}/{leadLimit}
                 </div>
               </div>

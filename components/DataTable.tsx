@@ -79,10 +79,11 @@ const DataTable: React.FC<Props> = ({ participants, onSelectParticipant, onClear
                   </div>
                 </div>
 
+                {/* Social Media Presence Indicators */}
                 <div className="flex items-center gap-2 mb-4">
-                  {p.linkedin && <span className="w-5 h-5 bg-blue-50 text-[#0077B5] rounded flex items-center justify-center text-[10px] font-bold">L</span>}
-                  {p.instagram && <span className="w-5 h-5 bg-pink-50 text-[#E4405F] rounded flex items-center justify-center text-[10px] font-bold">I</span>}
-                  {p.twitter && <span className="w-5 h-5 bg-slate-50 text-black rounded flex items-center justify-center text-[10px] font-bold">X</span>}
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black transition-all ${p.linkedin ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-300'}`}>L</div>
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black transition-all ${p.instagram ? 'bg-pink-600 text-white shadow-sm' : 'bg-slate-100 text-slate-300'}`}>I</div>
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black transition-all ${p.twitter ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-300'}`}>X</div>
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-slate-50 mt-4">
