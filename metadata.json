@@ -1,0 +1,7 @@
+{
+  "name": "DeepVera Ana Proje",
+  "description": "250 milyondan fazla şirket verisiyle dünya çapında veri madenciliği ve yapay zeka destekli potansiyel müşteri oluşturma gerçekleştiren kurumsal istihbarat sistemi.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
