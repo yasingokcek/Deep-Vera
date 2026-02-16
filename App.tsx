@@ -10,6 +10,7 @@ import PaymentModal from './components/PaymentModal';
 import CompanyDetail from './components/CompanyDetail';
 import IdentityModal from './components/IdentityModal';
 import DeepVeraAssistant from './components/DeepVeraAssistant';
+import AdminPanel from './components/AdminPanel';
 
 const SECTORS = [
   { id: 'retail', label: 'Perakende & Mağazacılık', icon: '🛒' },
@@ -31,24 +32,26 @@ const LOCATION_DATA: Record<string, string[]> = {
   "Avustralya": ["Tüm Bölgeler", "Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Canberra", "Gold Coast"],
   "ABD": ["New York", "California", "Texas", "Florida", "Washington"],
   "Almanya": ["Berlin", "Munich", "Hamburg", "Frankfurt", "Stuttgart"],
-  "İngiltere": ["London", "Manchester", "Birmingham", "Leeds"],
-  "Fransa": ["Paris", "Lyon", "Marseille", "Lille"]
+  "İngiltere": ["London", "Manchester", "Birmingham", "Leeds"]
 };
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('deepvera_active_session');
+    const local = localStorage.getItem('deepvera_active_session');
+    const session = sessionStorage.getItem('deepvera_active_session');
+    const saved = local || session;
     return saved ? JSON.parse(saved) : null;
   });
   
   const [view, setView] = useState<ViewState>(() => {
-    const saved = localStorage.getItem('deepvera_active_session');
-    return saved ? 'dashboard' : 'landing';
+    const local = localStorage.getItem('deepvera_active_session');
+    const session = sessionStorage.getItem('deepvera_active_session');
+    return (local || session) ? 'dashboard' : 'landing';
   });
 
   const [tokenBalance, setTokenBalance] = useState<number>(() => {
     const saved = localStorage.getItem('deepvera_tokens');
-    return saved ? parseInt(saved) : 1500;
+    return saved ? parseInt(saved) : 50; // Varsayılan bakiye 50 olarak güncellendi
   });
 
   const [participants, setParticipants] = useState<Participant[]>(() => {
@@ -66,14 +69,33 @@ const App: React.FC = () => {
   const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isIdentityModalOpen, setIsIdentityModalOpen] = useState(false);
+  const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   
   const stopAnalysisRef = useRef(false);
 
+  const handleLogin = (u: User, remember: boolean) => {
+    setUser(u);
+    setView('dashboard');
+    if (u.tokenBalance !== undefined) setTokenBalance(u.tokenBalance);
+    const userStr = JSON.stringify(u);
+    if (remember) {
+      localStorage.setItem('deepvera_active_session', userStr);
+    } else {
+      sessionStorage.setItem('deepvera_active_session', userStr);
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setView('landing');
+    localStorage.removeItem('deepvera_active_session');
+    sessionStorage.removeItem('deepvera_active_session');
+  };
+
   useEffect(() => {
-    if (user) localStorage.setItem('deepvera_active_session', JSON.stringify(user));
     localStorage.setItem('deepvera_tokens', tokenBalance.toString());
     localStorage.setItem('deepvera_leads_cache', JSON.stringify(participants));
-  }, [user, tokenBalance, participants]);
+  }, [tokenBalance, participants]);
 
   const startAnalysis = async () => {
     if (tokenBalance < 1) { setIsPaymentModalOpen(true); return; }
@@ -145,19 +167,21 @@ const App: React.FC = () => {
       {view === 'landing' ? (
         <LandingPage onGetStarted={() => setView('login')} />
       ) : view === 'login' ? (
-        <LoginForm onLogin={(u) => { setUser(u); setView('dashboard'); }} onCancel={() => setView('landing')} />
+        <LoginForm onLogin={handleLogin} onCancel={() => setView('landing')} />
       ) : (
         <>
           <Header 
             userName={user?.name}
             tokenBalance={tokenBalance}
-            onLogout={() => { setUser(null); setView('landing'); }}
+            onLogout={handleLogout}
             onBuyTokens={() => setIsPaymentModalOpen(true)}
             onOpenSettings={() => setIsIdentityModalOpen(true)}
+            onOpenAdmin={() => setIsAdminPanelOpen(true)}
+            role={user?.role}
           />
           
           <main className="flex-1 flex flex-col overflow-hidden px-6 lg:px-14 py-4 gap-4">
-            {/* Ultra-Minimal Command Dock */}
+            {/* Command Dock */}
             <div className="bg-white border border-slate-200/50 rounded-[2.5rem] p-4 shadow-[0_4px_20px_rgb(0,0,0,0.03)] shrink-0">
                <div className="flex flex-col lg:flex-row items-center gap-3">
                   <div className="w-full lg:flex-1 relative group">
@@ -168,7 +192,7 @@ const App: React.FC = () => {
                        type="text"
                        value={queryContext}
                        onChange={(e) => setQueryContext(e.target.value)}
-                       placeholder="Fuar URL'si veya Anahtar Kelime (Perakende odaklı arama)..."
+                       placeholder="Fuar URL'si veya Anahtar Kelime..."
                        className="w-full h-12 pl-12 pr-6 bg-slate-50/50 border border-slate-100 rounded-xl text-[12px] font-semibold outline-none focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-50/50 transition-all"
                      />
                   </div>
@@ -222,7 +246,6 @@ const App: React.FC = () => {
                   </div>
                </div>
 
-               {/* Cyber-HUD v5 */}
                {status !== AppStatus.IDLE && (
                  <div className="mt-5 pt-5 border-t border-slate-100 animate-fade-in">
                     <div className="flex justify-between items-center mb-4 px-2">
@@ -231,7 +254,6 @@ const App: React.FC = () => {
                           <span className="text-[8px] font-black text-blue-600 uppercase tracking-[0.4em]">NEURAL_ENGINE_RUNNING</span>
                        </div>
                        <div className="flex gap-4 text-[7px] font-bold text-slate-300 uppercase tracking-widest font-mono">
-                          <span>CORE: ACTIVE</span>
                           <span>LOAD: {participants.length} / {leadLimit}</span>
                           <span className="text-emerald-500">READY_TO_RESOLVE</span>
                        </div>
@@ -269,6 +291,7 @@ const App: React.FC = () => {
           <IdentityModal isOpen={isIdentityModalOpen} onClose={() => setIsIdentityModalOpen(false)} user={user} onUpdate={(f) => setUser(u => u ? {...u, ...f} : null)} />
           <PaymentModal isOpen={isPaymentModalOpen} isPro={user?.isPro} onClose={() => setIsPaymentModalOpen(false)} onSuccess={(t) => setTokenBalance(b => b + t)} onUpgrade={() => user && setUser({...user, isPro: true})} />
           <CompanyDetail participant={selectedParticipant} onClose={() => setSelectedParticipant(null)} userLogo={user?.companyLogo} />
+          {isAdminPanelOpen && <AdminPanel onClose={() => setIsAdminPanelOpen(false)} currentUser={user} />}
         </>
       )}
     </div>

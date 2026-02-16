@@ -22,22 +22,6 @@ export interface Participant {
   neuralLogs?: string[];
 }
 
-export interface ActivityPoint {
-  date: string;
-  logins: number;
-  tokensSpent: number;
-  analyses: number;
-}
-
-export interface SearchHistory {
-  id: string;
-  timestamp: number;
-  query: string;
-  sector: string;
-  city: string;
-  results: Participant[];
-}
-
 export interface User {
   username: string;
   password?: string;
@@ -76,3 +60,11 @@ export interface Sector {
 }
 
 export type SearchMode = 'db' | 'live';
+
+// Added missing ActivityPoint interface used by UserActivityChart component
+export interface ActivityPoint {
+  date: string;
+  tokensSpent: number;
+  analyses: number;
+  logins: number;
+}

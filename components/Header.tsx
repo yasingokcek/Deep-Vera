@@ -19,7 +19,9 @@ const Header: React.FC<HeaderProps> = ({
   tokenBalance, 
   onBuyTokens, 
   onOpenSettings,
-  userLogo
+  onOpenAdmin,
+  userLogo,
+  role
 }) => {
   return (
     <header className="h-16 shrink-0 flex items-center px-6 lg:px-14 bg-white/70 backdrop-blur-3xl sticky top-0 z-[60] border-b border-slate-100">
@@ -33,7 +35,17 @@ const Header: React.FC<HeaderProps> = ({
       
       <div className="flex-1"></div>
 
-      <div className="flex items-center gap-8">
+      <div className="flex items-center gap-6">
+        {role === 'admin' && (
+          <button 
+            onClick={onOpenAdmin}
+            className="hidden md:flex items-center gap-2 px-4 py-1.5 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg shadow-blue-100 hover:bg-slate-900 transition-all"
+          >
+            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+            ADMİN PANELİ
+          </button>
+        )}
+
         <div 
           onClick={onBuyTokens}
           className="flex items-center gap-3 bg-white px-4 py-1.5 rounded-xl border border-slate-100 group cursor-pointer hover:border-blue-200 hover:shadow-xl hover:shadow-blue-50/50 transition-all"
@@ -45,7 +57,7 @@ const Header: React.FC<HeaderProps> = ({
            <div className="w-6 h-6 rounded-full bg-slate-900 group-hover:bg-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-md transition-all">+</div>
         </div>
 
-        <div className="flex items-center gap-4 pl-8 border-l border-slate-100">
+        <div className="flex items-center gap-4 pl-6 border-l border-slate-100">
           <div className="text-right hidden sm:block">
             <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest block mb-0.5 truncate max-w-[100px]">{userName || 'Kullanıcı'}</span>
             <button onClick={onLogout} className="text-[7px] font-black text-red-500 uppercase tracking-widest hover:text-slate-900 transition-all">Sign_Out</button>

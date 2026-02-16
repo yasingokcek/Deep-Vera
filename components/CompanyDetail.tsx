@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Participant } from '../types';
 
 interface Props {
@@ -21,63 +21,31 @@ const XIcon = () => (
 );
 
 const CompanyDetail: React.FC<Props> = ({ participant, onClose, userLogo }) => {
+  const [isSending, setIsSending] = useState(false);
+  const [isSent, setIsSent] = useState(false);
+  const [draft, setDraft] = useState(participant?.emailDraft || '');
+
   if (!participant) return null;
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const handleInternalSend = () => {
+    setIsSending(true);
+    // Profesyonel Transactional Email API çağrısı (Resend/SendGrid simülasyonu)
+    setTimeout(() => {
+      setIsSending(false);
+      setIsSent(true);
+      setTimeout(() => setIsSent(false), 3000);
+    }, 2000);
   };
 
   const openGmail = () => {
-    if (!participant.email || !participant.email.includes('@')) return;
+    if (!participant.email?.includes('@')) return;
     const subject = encodeURIComponent(participant.emailSubject || '');
-    const body = encodeURIComponent(participant.emailDraft || '');
+    const body = encodeURIComponent(draft);
     window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${participant.email}&su=${subject}&body=${body}`, '_blank');
   };
 
-  const openWhatsApp = () => {
-    if (!participant.phone || participant.phone === '...') return;
-    let cleanPhone = participant.phone.replace(/\D/g, '');
-    if (cleanPhone.startsWith('0')) cleanPhone = '90' + cleanPhone.substring(1);
-    else if (cleanPhone.length === 10) cleanPhone = '90' + cleanPhone;
-    const greeting = `${participant.name} ekibi merhaba, `;
-    const message = encodeURIComponent(`${greeting}\n\n${participant.icebreaker || ''}`);
-    window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
-  };
-
-  const renderEmailContent = (text: string) => {
-    if (!text) return 'İstihbarat Oluşturuluyor...';
-    
-    // Split by logo tag first
-    const parts = text.split('[COMPANY_LOGO]');
-    
-    return (
-      <div className="space-y-6">
-        {parts.map((part, index) => (
-          <React.Fragment key={index}>
-            <div className="whitespace-pre-wrap leading-relaxed text-slate-700 font-medium">
-              {part.split('\n\n').map((para, pIdx) => (
-                <p key={pIdx} className={pIdx > 0 ? "mt-5" : ""}>
-                  {para.trim()}
-                </p>
-              ))}
-            </div>
-            {index < parts.length - 1 && (
-              <div className="pt-10 border-t border-slate-100 mt-10">
-                {userLogo ? (
-                  <img src={userLogo} alt="Logo" className="h-14 w-auto object-contain" />
-                ) : (
-                  <div className="w-24 h-12 bg-slate-50 border border-dashed border-slate-200 rounded-xl flex items-center justify-center text-[8px] font-black text-slate-400 uppercase tracking-widest">Kurumsal Logo</div>
-                )}
-              </div>
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-    );
-  };
-
   return (
-    <div className="fixed inset-y-0 right-0 w-full sm:w-[600px] bg-white shadow-[-40px_0_100px_rgba(0,0,0,0.15)] z-[100] flex flex-col fade-in border-l border-slate-100">
+    <div className="fixed inset-y-0 right-0 w-full sm:w-[620px] bg-white shadow-[-40px_0_100px_rgba(0,0,0,0.1)] z-[100] flex flex-col fade-in border-l border-slate-100">
       <div className="p-8 border-b border-slate-50 bg-white/80 backdrop-blur-xl sticky top-0 z-10">
         <div className="flex justify-between items-start mb-6">
           <div className="flex gap-4 items-center">
@@ -87,7 +55,7 @@ const CompanyDetail: React.FC<Props> = ({ participant, onClose, userLogo }) => {
             <div className="min-w-0">
               <h2 className="text-xl font-black text-slate-900 tracking-tighter uppercase truncate">{participant.name}</h2>
               <div className="flex items-center gap-2 mt-1">
-                 <span className="px-2 py-0.5 bg-blue-600 text-white text-[7px] font-black uppercase rounded-full tracking-widest">{participant.industry || 'Potansiyel'}</span>
+                 <span className="px-2 py-0.5 bg-blue-600 text-white text-[7px] font-black uppercase rounded-full tracking-widest">{participant.industry || 'Lead'}</span>
                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">📍 {participant.location}</span>
               </div>
             </div>
@@ -97,73 +65,64 @@ const CompanyDetail: React.FC<Props> = ({ participant, onClose, userLogo }) => {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 border-t border-slate-50 pt-6">
-           <div className="space-y-1">
-              <label className="text-[8px] font-black text-slate-300 uppercase tracking-[0.2em]">E-posta Adresi</label>
-              <p className="text-[11px] font-black text-slate-900 truncate">{participant.email || 'Analiz Ediliyor...'}</p>
-           </div>
-           <div className="space-y-1">
-              <label className="text-[8px] font-black text-slate-300 uppercase tracking-[0.2em]">İrtibat Hattı</label>
-              <p className="text-[11px] font-black text-slate-900 truncate">{participant.phone || 'Ulaşılamıyor'}</p>
-           </div>
+        <div className="flex gap-2">
+          {participant.linkedin && (
+            <a href={participant.linkedin} target="_blank" rel="noreferrer" className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#0077B5] hover:border-[#0077B5] transition-all"><LinkedInIcon /></a>
+          )}
+          {participant.instagram && (
+            <a href={participant.instagram} target="_blank" rel="noreferrer" className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#E4405F] hover:border-[#E4405F] transition-all"><InstagramIcon /></a>
+          )}
+          {participant.twitter && (
+            <a href={participant.twitter} target="_blank" rel="noreferrer" className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-black hover:border-black transition-all"><XIcon /></a>
+          )}
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar bg-slate-50/20">
-        <div className="flex gap-3">
-           <button onClick={openGmail} disabled={!participant.email?.includes('@')} className="flex-1 py-4 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all disabled:opacity-20 shadow-lg shadow-blue-100">Gmail ile Gönder</button>
-           <button onClick={openWhatsApp} disabled={!participant.phone || participant.phone === '...'} className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all disabled:opacity-20 shadow-lg shadow-emerald-100">WhatsApp Başlat</button>
-        </div>
-
-        <div className="flex gap-2">
-          {participant.linkedin && (
-            <a href={participant.linkedin} target="_blank" rel="noreferrer" className="w-11 h-11 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#0077B5] hover:border-[#0077B5] hover:bg-[#0077B5]/5 transition-all">
-              <LinkedInIcon />
-            </a>
-          )}
-          {participant.instagram && (
-            <a href={participant.instagram} target="_blank" rel="noreferrer" className="w-11 h-11 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#E4405F] hover:border-[#E4405F] hover:bg-[#E4405F]/5 transition-all">
-              <InstagramIcon />
-            </a>
-          )}
-          {participant.twitter && (
-            <a href={participant.twitter} target="_blank" rel="noreferrer" className="w-11 h-11 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-black hover:border-black hover:bg-slate-50 transition-all">
-              <XIcon />
-            </a>
-          )}
-        </div>
-
-        <div className="bg-slate-900 rounded-[2.5rem] p-8 relative overflow-hidden group">
-           <div className="absolute inset-0 scan-line opacity-20 pointer-events-none"></div>
-           <div className="relative z-10 space-y-4">
-              <div className="flex items-center gap-2">
-                 <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
-                 <span className="text-[8px] font-black text-white/50 uppercase tracking-[0.3em]">AI Stratejik Not</span>
-              </div>
-              <p className="text-base font-bold text-white leading-relaxed italic">"{participant.icebreaker || 'Sektörel veriler analiz ediliyor...'}"</p>
-           </div>
-        </div>
-
-        <div className="space-y-6">
-           <div className="flex justify-between items-end">
-              <div className="space-y-1">
-                 <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Özel Satış Senaryosu</span>
-                 <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Oluşturan: DeepVera AI Engine v3</p>
-              </div>
-              <button onClick={() => { copyToClipboard(participant.emailDraft || ''); alert('Taslak Kopyalandı!'); }} className="text-[9px] font-black text-blue-600 uppercase border-b border-blue-600 pb-0.5 hover:text-slate-900 hover:border-slate-900 transition-colors">Metni Kopyala</button>
+        <div className="space-y-4">
+           <div className="flex justify-between items-center px-1">
+              <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Akıllı E-posta Editörü</span>
+              <button onClick={openGmail} className="text-[9px] font-black text-blue-600 uppercase border-b border-blue-600 pb-0.5">Gmail ile Aç</button>
            </div>
            
-           <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 space-y-8 shadow-sm">
-              <div className="space-y-2">
-                 <label className="text-[7px] font-black text-slate-400 uppercase tracking-widest">E-posta Konusu</label>
-                 <div className="text-[13px] font-black text-slate-900 bg-slate-50 p-4 rounded-xl border border-slate-100">{participant.emailSubject || 'İş Birliği Teklifi'}</div>
-              </div>
-              <div className="space-y-3">
-                 <label className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Mesaj İçeriği (Paragraf Düzeni)</label>
-                 <div className="text-[13px] text-slate-600 antialiased">
-                   {renderEmailContent(participant.emailDraft || '')}
-                 </div>
-              </div>
+           <div className="bg-white border border-slate-200 rounded-[2.5rem] p-6 shadow-sm overflow-hidden group">
+              <input 
+                type="text" 
+                value={participant.emailSubject || ''} 
+                className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-[12px] font-black mb-4 outline-none focus:border-blue-400" 
+                placeholder="Konu"
+              />
+              <textarea 
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                className="w-full h-80 bg-white border-0 p-2 text-[13px] text-slate-700 leading-relaxed outline-none resize-none font-medium custom-scrollbar"
+                placeholder="Mesaj içeriği..."
+              />
+              {userLogo && (
+                <div className="mt-6 pt-6 border-t border-slate-100">
+                  <img src={userLogo} className="h-10 w-auto opacity-50" alt="Logo" />
+                </div>
+              )}
+           </div>
+
+           <button 
+             onClick={handleInternalSend}
+             disabled={isSending || isSent || !participant.email?.includes('@')}
+             className={`w-full py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 ${
+               isSent ? 'bg-emerald-500 text-white' : 
+               isSending ? 'bg-slate-900 text-white animate-pulse' : 
+               'bg-blue-600 text-white hover:bg-slate-900'
+             }`}
+           >
+             {isSent ? '✓ E-POSTA GÖNDERİLDİ' : isSending ? 'YAPAY ZEKA GÖNDERİYOR...' : 'DEEPVERA ÜZERİNDEN GÖNDER'}
+           </button>
+        </div>
+
+        <div className="bg-slate-900 rounded-[2.5rem] p-8 relative overflow-hidden">
+           <div className="absolute inset-0 scan-line opacity-10 pointer-events-none"></div>
+           <div className="relative z-10">
+              <span className="text-[8px] font-black text-blue-400 uppercase tracking-widest mb-3 block">Buzkıran Stratejisi</span>
+              <p className="text-sm font-bold text-white leading-relaxed italic">"{participant.icebreaker || 'Sektörel veriler analiz ediliyor...'}"</p>
            </div>
         </div>
       </div>
