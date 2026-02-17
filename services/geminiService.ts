@@ -28,18 +28,17 @@ TEMSİLCİMİZ: ${sender?.authorizedPerson || sender?.name}
       ${senderContext}
 
       GÖREV:
-      1. Şirketin güncel TELEFON ve EMAIL adresini bul.
-      2. Şirketin en büyük 3 RAKİBİNİ belirle.
-      3. Şirketin bu sektördeki en kritik 2 "ACI NOKTASINI" (Pain Points) analiz et.
-      4. Bu acı noktalarına odaklanan, STRATEJİK ve İKNA EDİCİ bir e-posta taslağı yaz.
+      1. Şirketin güncel TELEFON, EMAIL ve SOSYAL MEDYA (LinkedIn, Instagram, Facebook, Twitter) linklerini bul.
+      2. Şirketin RAKİPLERİNİ ve ACI NOKTALARINI analiz et.
+      3. ULTRA-STRATEJİK bir e-posta yaz.
 
-      E-POSTA YAZIM PROTOKOLÜ:
-      - Ton: Son derece profesyonel, merak uyandırıcı ve çözüm odaklı.
-      - Yapı (3 Paragraf):
-        - Paragraf 1 (Buz Kırıcı): Şirketin sektördeki başarısına veya rakiplerine kıyasla konumuna samimi bir atıf.
-        - Paragraf 2 (Değer Önerisi): "${name}" için tespit ettiğin bir probleme değin ve "Biz ${sender?.companyName} olarak bunu nasıl çözüyoruz" açıkla.
-        - Paragraf 3 (CTA): Net ve düşük bariyerli bir eylem çağrısı. Örn: "Salı sabahı 5 dakikalık bir görüşme uygun mudur?"
-      - Dil: Akıcı İstanbul Türkçesi. Paragraflar arasında <br><br> kullan.
+      E-POSTA YAZIM KURALLARI (HAYATİ):
+      - Toplam 3 paragraf olmalı.
+      - Her paragraf arasına tam olarak iki adet <br><br> etiketi koy.
+      - Paragraf 1: Şirketin son başarılarına veya sosyal medyadaki profesyonel duruşuna atıf yapan şık bir giriş.
+      - Paragraf 2: Sektörel bir "acı noktası" tespiti ve bizim çözümümüzün faydası.
+      - Paragraf 3: Net bir "müsaitlik" sorusu (CTA).
+      - Dil: Akıcı, saygılı, samimi İstanbul Türkçesi.
       `,
       config: { 
         tools: [{ googleSearch: {} }],
@@ -49,12 +48,18 @@ TEMSİLCİMİZ: ${sender?.authorizedPerson || sender?.name}
           properties: {
             email: { type: Type.STRING },
             phone: { type: Type.STRING },
+            linkedin: { type: Type.STRING },
+            instagram: { type: Type.STRING },
+            facebook: { type: Type.STRING },
+            twitter: { type: Type.STRING },
             industry: { type: Type.STRING },
+            description: { type: Type.STRING },
             starRating: { type: Type.NUMBER },
             competitors: { type: Type.ARRAY, items: { type: Type.STRING } },
             painPoints: { type: Type.ARRAY, items: { type: Type.STRING } },
             emailSubject: { type: Type.STRING },
-            emailDraft: { type: Type.STRING }
+            emailDraft: { type: Type.STRING },
+            prestigeNote: { type: Type.STRING }
           }
         }
       },

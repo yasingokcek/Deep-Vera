@@ -2,7 +2,7 @@
 export interface SenderAccount {
   id: string;
   email: string;
-  password?: string;
+  accessToken: string; // OAuth2'den gelen yetki anahtarı
   status: 'active' | 'cooldown' | 'failed';
   usageCount: number;
 }
@@ -14,6 +14,9 @@ export interface Participant {
   phone: string;
   email: string;
   linkedin?: string;
+  instagram?: string;
+  facebook?: string;
+  twitter?: string;
   industry?: string;
   description?: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
@@ -28,6 +31,7 @@ export interface Participant {
   competitors?: string[];
   painPoints?: string[];
   strategicValue?: string;
+  prestigeNote?: string;
 }
 
 export interface User {
@@ -47,7 +51,6 @@ export interface User {
   googleAccessToken?: string;
   senderAccounts: SenderAccount[];
   currentSenderIndex: number;
-  // Added globalPitch to resolve property error in geminiService.ts
   globalPitch?: string;
 }
 
@@ -61,7 +64,6 @@ export enum AppStatus {
   FAILED = 'FAILED'
 }
 
-// Added SavedSearch to resolve import error in App.tsx
 export interface SavedSearch {
   id: string;
   name: string;
@@ -72,17 +74,14 @@ export interface SavedSearch {
   participants: Participant[];
 }
 
-// Added Sector to resolve import error in IntelligenceCenter.tsx
 export interface Sector {
   id: string;
   label: string;
   icon: string;
 }
 
-// Added SearchMode to resolve import error in IntelligenceCenter.tsx
 export type SearchMode = 'db' | 'live';
 
-// Added ActivityPoint to resolve import error in UserActivityChart.tsx
 export interface ActivityPoint {
   date: string;
   tokensSpent: number;
