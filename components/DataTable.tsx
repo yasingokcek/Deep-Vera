@@ -89,12 +89,22 @@ const DataTable: React.FC<Props> = ({
            <span className="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{participants.length} Kayıt</span>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={onExport} className="h-8 px-4 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all shadow-sm">📥 EXCEL'E AKTAR</button>
+          {/* EXCEL AKTAR BUTONU */}
+          <button 
+            onClick={onExport} 
+            className="h-8 px-4 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all shadow-sm flex items-center gap-2"
+          >
+            <span>📥 EXCEL'E AKTAR</span>
+          </button>
+          
           <button onClick={handleQueueAll} className="h-8 px-4 bg-blue-600 text-white border border-blue-500 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all shadow-lg flex items-center gap-2"><span>⚡ TÜMÜNÜ KUYRUĞA AL</span></button>
+          
           {queuedCount > 0 && onStartAutomation && (
             <button onClick={onStartAutomation} className="h-8 px-4 bg-amber-500 text-white border border-amber-400 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all shadow-lg animate-pulse">🚀 OTONOMU BAŞLAT ({queuedCount})</button>
           )}
+          
           <button onClick={triggerSaveSearch} className={`h-8 px-4 border rounded-xl text-[8px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${isBusy ? 'bg-slate-50 text-slate-400 border-slate-100' : 'bg-indigo-50 text-indigo-600 border-indigo-100'}`}><span>{isBusy ? '⌛ ANALİZ EDİLİYOR...' : '📁 KÜTÜPHANEYE KAYDET'}</span></button>
+          
           <button onClick={onClear} className="h-8 px-4 bg-white text-slate-400 border border-slate-100 rounded-xl text-[8px] font-black uppercase tracking-widest hover:text-red-500 transition-all">TEMİZLE</button>
         </div>
       </div>

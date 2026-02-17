@@ -150,15 +150,23 @@ const App: React.FC = () => {
 
   const exportToExcel = () => {
     if (participants.length === 0) return;
-    const headers = ["Firma Adı", "Web Sitesi", "Email", "Telefon", "Konum", "Yıldız Puanı", "Sektör"];
+    // CSV oluşturma
+    const headers = ["Firma Adi", "Web Sitesi", "Email", "Telefon", "Konum", "Yildiz Puani", "Sektor"];
     const rows = participants.map(p => [
-      p.name, p.website, p.email, p.phone, p.location, p.starRating || 0, p.industry || ''
+      `"${p.name.replace(/"/g, '""')}"`,
+      `"${(p.website || '').replace(/"/g, '""')}"`,
+      `"${(p.email || '').replace(/"/g, '""')}"`,
+      `"${(p.phone || '').replace(/"/g, '""')}"`,
+      `"${(p.location || '').replace(/"/g, '""')}"`,
+      p.starRating || 0,
+      `"${(p.industry || '').replace(/"/g, '""')}"`
     ]);
-    const csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].map(e => e.join(",")).join("\n");
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `DeepVera_Istihbarat_${new Date().toLocaleDateString()}.csv`);
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `DeepVera_Istihbarat_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

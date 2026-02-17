@@ -30,32 +30,30 @@ async function callWithRetry<T>(
   throw new Error("Bağlantı sağlanamadı.");
 }
 
+// Fix: Implemented analyzeOwnWebsite to extract company data from a URL using Gemini API
 export const analyzeOwnWebsite = async (url: string): Promise<Partial<User>> => {
   const ai = getAI();
   return callWithRetry(async () => {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `"${url}" web sitesini derinlemesine incele. Bu şirket tam olarak ne iş yapıyor? 
-      Aşağıdaki bilgileri yapılandırılmış JSON olarak çıkar:
-      1. companyName: Şirketin tam adı.
-      2. companyDescription: Profesyonel, etkileyici bir hakkımızda özeti.
-      3. mainActivity: Sunduğu temel çözüm ve teknoloji.
-      4. targetAudience: En ideal müşteri profili kimdir?
-      5. globalPitch: Bu şirket için reddedilemez bir satış teklifi (pitch) taslağı oluştur.`,
-      config: {
+      contents: `Şu web sitesini analiz et ve şirket bilgilerini çıkar: ${url}. 
+      Şirketin adını (companyName), ana faaliyet alanını (mainActivity), hedef kitlesini (targetAudience), 
+      global asansör cümlesini (globalPitch) ve resmi adresini (officialAddress) belirle.
+      Lütfen yanıtı Türkçe olarak ver.`,
+      config: { 
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
             companyName: { type: Type.STRING },
-            companyDescription: { type: Type.STRING },
             mainActivity: { type: Type.STRING },
             targetAudience: { type: Type.STRING },
-            globalPitch: { type: Type.STRING }
+            globalPitch: { type: Type.STRING },
+            officialAddress: { type: Type.STRING }
           }
         }
-      }
+      },
     });
     return JSON.parse(response.text || '{}');
   });
@@ -85,21 +83,19 @@ HEDEFİMİZ: Belirlenen sektördeki şirketlere değer katmak.
       ${senderContext}
 
       GÖREV:
-      1. Hedef şirket hakkında güncel bir haber veya gelişme bul.
-      2. Şirketin prestijini (starRating) belirle (1-5 arası). Google yorumları ve web sitesi kalitesini baz al.
-      3. Şirketin güncel TELEFON NUMARASINI ve iletişim bilgilerini mutlaka tespit et.
-      4. DOĞAL TÜMCE DÜZENİNDE, AKICI BİR E-POSTA TASLAĞI oluştur. 
-      
-      E-POSTA YAZIM KURALLARI (KRİTİK):
-      - KESİNLİKLE "Giriş:", "Gelişme:", "Neden Biz:" gibi başlıklar veya madde işaretleri KULLANMA.
-      - Metin, tıpkı bir insanın kaleminden çıkmış gibi, birbirine bağlı paragraflar şeklinde olmalı.
-      - İlk paragrafta onlara neden ulaştığını (haberleri, başarıları vb.) anlat.
-      - İkinci paragrafta nazikçe kendi katma değerinden bahset.
-      - Üçüncü paragrafta bir kahve daveti veya tanışma toplantısı önerisiyle bitir.
+      1. Şirketin güncel TELEFON NUMARASINI bul. Bu en kritik önceliktir.
+      2. Şirketin prestijini (1-5 yıldız) Google yorumları ve web sitesi kalitesine göre belirle.
+      3. TAMAMEN DOĞAL, İNSAN YAZIMI GİBİ BİR E-POSTA TASLAĞI oluştur.
+
+      E-POSTA YAZIM KURALLARI (ÇOK ÖNEMLİ):
+      - KESİNLİKLE madde işaretleri, "Giriş:", "Konu:" gibi robotik başlıklar KULLANMA.
+      - Metin, 2 veya 3 akıcı paragraftan oluşmalı. 
+      - İlk paragrafta onlara neden ulaştığınızı (sektörel başarıları, web siteleri veya güncel haberleri) samimi bir dille belirtin.
+      - İkinci paragrafta sunduğunuz değeri ("Biz DeepVera olarak...") birbirine bağlı cümlelerle anlatın.
+      - Son bölümde bir tanışma randevusu veya telefon görüşmesi talep edin.
+      - Hitap: "Sayın <b>[Firma Adı]</b> Yetkilisi,"
+      - Dil: Kurumsal, kibar ve akıcı bir İstanbul Türkçesi.
       - Paragrafları <br><br> ile ayır.
-      - Şirket isimlerini <b>Firma Adı</b> şeklinde yap.
-      - Hitap: "Sayın <b>[Firma]</b> Yetkilisi," ile başla.
-      - Dil profesyonel, nazik ve akıcı bir İstanbul Türkçesi olmalı.
       `,
       config: { 
         tools: [{ googleSearch: {} }],
@@ -146,8 +142,8 @@ export const extractLeadList = async (
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: isUrl 
-        ? `"${queryContext}" sitesindeki katılımcı listesini çıkar. Her firmanın adını, varsa web sitesini ve mutlaka TELEFON numarasını bulmaya çalış. Limit: ${limit}.`
-        : `"${location}" bölgesindeki "${sector}" sektöründen ${limit} şirket listele. Her birinin telefon numarasını tespit etmeye çalış. Atla: ${excludeNames.slice(-10).join(", ")}`,
+        ? `"${queryContext}" sitesindeki katılımcı listesini çıkar. Her firmanın TELEFON numarasını mutlaka tespit et. Limit: ${limit}.`
+        : `"${location}" bölgesindeki "${sector}" sektöründen ${limit} şirket listele. Şirketlerin telefon numaralarını mutlaka bul. Atla: ${excludeNames.slice(-10).join(", ")}`,
       config: {
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
