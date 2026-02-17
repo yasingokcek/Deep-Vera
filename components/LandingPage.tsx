@@ -26,7 +26,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
   ];
 
   const navLinks = [
-    { label: "Neden Biz?", href: "#why-us" },
+    { label: "Neden Biz?", href: "#features" },
     { label: "Biz Kimiz?", href: "#who-we-are" },
     { label: "Nasıl Çalışır?", href: "#how-it-works" },
     { label: "İletişim", href: "#footer" }
@@ -50,7 +50,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
              {/* Desktop Nav Links */}
              <div className="hidden lg:flex items-center gap-8 border-l border-slate-100 pl-10">
                 {navLinks.map(link => (
-                  <a key={link.label} href={link.href} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors">
+                  <a key={link.label} href={link.href} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-all">
                     {link.label}
                   </a>
                 ))}
@@ -64,7 +64,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center pt-24 overflow-hidden">
+      <section id="who-we-are" className="relative min-h-screen flex items-center pt-24 overflow-hidden">
         <div className="absolute top-0 left-0 w-1/2 h-full bg-slate-50/50 blur-[120px] -z-10 opacity-30"></div>
         <div className="absolute top-0 right-0 w-1/2 h-full bg-blue-600/5 blur-[150px] -z-10 animate-pulse"></div>
 
@@ -81,7 +81,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             </h1>
             
             <p className="text-xl lg:text-2xl text-slate-500 font-medium leading-relaxed max-w-xl">
-              Hedeflerinizi belirleyin, otonom ajanlarımız dünyayı tarasın. Manuel aramalarla vakit kaybetmeyin; sadece masanıza düşen reddedilemez teklifleri yönetin.
+              Hedeflerinizi belirleyin, otonom ajanlarımız dünyayı tarasın. Manuel aramalarla vakit kaybetmeyin; sadece masanıza düşen teklifleri yönetin.
             </p>
             
             <div className="flex items-center gap-6">
@@ -104,7 +104,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       </section>
 
       {/* Sektörel Çözümler */}
-      <section id="sectors" className="py-40 bg-white border-t border-slate-50">
+      <section id="features" className="py-40 bg-white border-t border-slate-50">
         <div className="container mx-auto px-6 lg:px-14 text-center">
            <span className="text-[11px] font-black text-blue-600 uppercase tracking-[0.4em] mb-4 block">Nerede Kullanılır?</span>
            <h2 className="text-4xl lg:text-7xl font-black uppercase tracking-tighter leading-none mb-24">Global <span className="text-blue-600 italic">Büyüme Matrisi</span></h2>
@@ -125,7 +125,31 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
         </div>
       </section>
 
-      {/* Footer / Kurumsal İletişim */}
+      {/* How It Works */}
+      <section id="how-it-works" className="py-40 bg-slate-50 relative">
+        <div className="container mx-auto px-6 lg:px-14 text-center">
+           <h2 className="text-4xl lg:text-7xl font-black uppercase tracking-tighter mb-20">Nasıl <span className="text-blue-600">Çalışır?</span></h2>
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+              <div className="bg-white p-12 rounded-[3rem] shadow-xl border border-slate-100">
+                 <div className="text-4xl mb-6">🎯</div>
+                 <h4 className="text-xl font-black uppercase mb-4">Hedef Belirleyin</h4>
+                 <p className="text-sm font-medium text-slate-500">İster bir fuar sitesi verin, ister sektör ismi girin. Ajanlarımız dünyayı saniyeler içinde tarasın.</p>
+              </div>
+              <div className="bg-white p-12 rounded-[3rem] shadow-xl border border-slate-100">
+                 <div className="text-4xl mb-6">🧠</div>
+                 <h4 className="text-xl font-black uppercase mb-4">Analiz & Kişiselleştirme</h4>
+                 <p className="text-sm font-medium text-slate-500">Her şirket için haberleri okur, LinkedIn profillerini analiz eder ve kişiye özel teklif hazırlar.</p>
+              </div>
+              <div className="bg-white p-12 rounded-[3rem] shadow-xl border border-slate-100">
+                 <div className="text-4xl mb-6">📤</div>
+                 <h4 className="text-xl font-black uppercase mb-4">Otonom Gönderim</h4>
+                 <p className="text-sm font-medium text-slate-500">Onayladığınız adaylara e-postalarınız belirlediğiniz aralıklarla otonom olarak iletilir.</p>
+              </div>
+           </div>
+        </div>
+      </section>
+
+      {/* Footer */}
       <footer id="footer" className="bg-slate-900 text-white py-24 relative overflow-hidden">
          <div className="container mx-auto px-6 lg:px-14 relative z-10">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
@@ -135,7 +159,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                      <span className="text-2xl font-black tracking-tighter uppercase">AI <span className="text-blue-500">DeepVera</span></span>
                   </div>
                   <h3 className="text-4xl font-black uppercase tracking-tighter leading-tight mb-6">Satışın Geleceğini <br/> <span className="text-blue-500">Birlikte İnşa Edelim.</span></h3>
-                  <p className="text-white/40 text-lg font-medium max-w-md">DeepVera otonom ajanları, şirketinizin büyüme hedeflerini saniyeler içinde analiz eder ve harekete geçer.</p>
+                  <p className="text-white/40 text-lg font-medium max-w-md">DeepVera otonom ajanları, şirketinizin büyüme hedeflerini saniyeler içinde analiz eder.</p>
                </div>
 
                <div className="space-y-6">
@@ -149,32 +173,20 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                         <a href="https://wa.me/902122630900" target="_blank" rel="noopener noreferrer" className="text-3xl font-black hover:text-emerald-500 transition-colors tracking-tighter">Hızlı Mesaj Gönder</a>
                      </div>
                   </div>
-                  <div className="flex justify-between items-center px-6">
-                     <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">DeepVera Intelligence Systems © 2024</span>
-                     <div className="flex gap-6">
-                        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] hover:text-white transition-colors cursor-pointer">KVKK</span>
-                        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] hover:text-white transition-colors cursor-pointer">Gizlilik</span>
-                     </div>
-                  </div>
                </div>
             </div>
          </div>
-         {/* Background Decoration */}
-         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
       </footer>
 
-      {/* Persistent WhatsApp FAB for Landing Page */}
+      {/* Persistent WhatsApp Button */}
       <a 
         href="https://wa.me/902122630900" 
         target="_blank" 
         rel="noopener noreferrer"
-        className="fixed bottom-10 right-10 z-[110] w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center text-3xl shadow-2xl shadow-emerald-200 hover:scale-110 hover:bg-emerald-600 transition-all active:scale-95 group"
+        className="fixed bottom-10 right-10 z-[110] w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center text-3xl shadow-2xl hover:scale-110 hover:bg-emerald-600 transition-all active:scale-95 group"
       >
         <div className="absolute -inset-1 bg-emerald-400 rounded-full blur opacity-20 group-hover:opacity-40 animate-pulse"></div>
         <span className="relative z-10">💬</span>
-        <div className="absolute right-20 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap shadow-xl">
-           WhatsApp İletişim Hattı
-        </div>
       </a>
 
       <style>{`

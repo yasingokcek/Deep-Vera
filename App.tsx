@@ -111,7 +111,7 @@ const App: React.FC = () => {
   const startAnalysis = async () => {
     if (tokenBalance < 1) { setIsPaymentModalOpen(true); return; }
     stopAnalysisRef.current = false;
-    setStatus(AppStatus.IDLE); // Reset status first
+    setStatus(AppStatus.IDLE);
     setStatus(AppStatus.LOADING);
     
     try {
@@ -223,9 +223,8 @@ const App: React.FC = () => {
             <DataTable participants={participants} status={status} tokenBalance={tokenBalance} onSelectParticipant={setSelectedParticipant} onExport={() => {}} onClear={() => setParticipants([])} updateParticipant={updateParticipant} />
           </main>
 
-          {/* Unified Action Menu for Dashboard (Connect Menu) */}
+          {/* Unified DV Connect Menu (Dashboard) */}
           <div className="fixed bottom-8 right-8 z-[300] flex flex-col items-end gap-5">
-             {/* Sub-items (Opens upward) */}
              <div className={`flex flex-col items-end gap-5 transition-all duration-500 transform origin-bottom ${isConnectMenuOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-0 opacity-0 translate-y-10 pointer-events-none'}`}>
                 {/* WhatsApp Action */}
                 <a 
@@ -248,10 +247,10 @@ const App: React.FC = () => {
                 </button>
              </div>
 
-             {/* Main Multi-Action Toggle */}
+             {/* Primary Toggle FAB */}
              <button 
                onClick={() => setIsConnectMenuOpen(!isConnectMenuOpen)}
-               className={`w-20 h-20 rounded-[2.5rem] flex items-center justify-center text-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] transition-all active:scale-90 group relative overflow-hidden ${isConnectMenuOpen ? 'bg-slate-900 rotate-45 shadow-none' : 'bg-blue-600'}`}
+               className={`w-20 h-20 rounded-[2.5rem] flex items-center justify-center text-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] transition-all active:scale-90 group relative overflow-hidden ${isConnectMenuOpen ? 'bg-slate-900 rotate-45' : 'bg-blue-600'}`}
              >
                 <div className="absolute -inset-1 bg-white/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-all animate-pulse"></div>
                 <span className="relative z-10 text-white font-black tracking-tighter uppercase">{isConnectMenuOpen ? '×' : 'DV'}</span>
