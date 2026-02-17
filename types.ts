@@ -26,9 +26,14 @@ export interface Participant {
   nextAttemptAt?: number;
   healthScore?: number;
   newsTrigger?: string;
-  starRating?: number; // 1-5 arası puan
-  reviewCount?: number; // Toplam yorum sayısı
-  prestigeNote?: string; // Puanlama gerekçesi
+  starRating?: number;
+  reviewCount?: number;
+  prestigeNote?: string;
+  // Stratejik Alanlar
+  competitors?: string[];
+  painPoints?: string[];
+  strategicValue?: string;
+  growthPotential?: string;
 }
 
 export interface SavedSearch {

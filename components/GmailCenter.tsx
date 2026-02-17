@@ -16,6 +16,12 @@ interface Email {
   read: boolean;
 }
 
+const DEMO_EMAILS: Email[] = [
+  { id: '1', from: 'Kaan Yılmaz (Emlak Konut)', subject: 'Gayrimenkul Teklifiniz Hakkında', date: '10:45', snippet: 'Göndermiş olduğunuz yapay zeka destekli analizleri inceledik. Oldukça etkileyici görünüyor...', read: false },
+  { id: '2', from: 'Ayşe Demir (Restoran Zinciri)', subject: 'Tedarik Zinciri Görüşmesi', date: '09:30', snippet: 'Otonom ajanlarınızın sunduğu raporlar elimize ulaştı. Yarın için bir zoom toplantısı...', read: true },
+  { id: '3', from: 'LinkedIn Operasyon', subject: 'Yeni Bağlantı Talebi', date: 'Dün', snippet: 'Bir potansiyel müşteri profilinizi inceledi ve sizinle bağlantı kurmak istiyor...', read: true }
+];
+
 const GmailCenter: React.FC<Props> = ({ user, onClose }) => {
   const [activeTab, setActiveTab] = useState<'inbox' | 'sent' | 'drafts'>('inbox');
   const [emails, setEmails] = useState<Email[]>([]);
@@ -23,6 +29,15 @@ const GmailCenter: React.FC<Props> = ({ user, onClose }) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (user?.googleAccessToken === 'mock_token_12345') {
+      setLoading(true);
+      setTimeout(() => {
+        setEmails(DEMO_EMAILS);
+        setLoading(false);
+      }, 800);
+      return;
+    }
+
     if (user?.googleAccessToken) {
       fetchRealEmails();
     }
@@ -54,7 +69,6 @@ const GmailCenter: React.FC<Props> = ({ user, onClose }) => {
             { headers: { Authorization: `Bearer ${user?.googleAccessToken}` } }
           );
           const detail = await detailRes.json();
-          
           const getHeader = (name: string) => detail.payload.headers.find((h: any) => h.name === name)?.value || '';
           
           return {
@@ -83,7 +97,7 @@ const GmailCenter: React.FC<Props> = ({ user, onClose }) => {
             <div className="w-10 h-10 bg-red-600 text-white rounded-xl flex items-center justify-center text-lg font-black shadow-lg">M</div>
             <div>
                <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight">Gmail Komuta Merkezi</h2>
-               <p className="text-[8px] font-black text-blue-500 uppercase tracking-[0.3em]">Gerçek Zamanlı Senkronizasyon: {user?.email}</p>
+               <p className="text-[8px] font-black text-blue-500 uppercase tracking-[0.3em]">{user?.googleAccessToken === 'mock_token_12345' ? 'Simülasyon Modu Aktif (Demo)' : `Senkronize: ${user?.email}`}</p>
             </div>
          </div>
          <button onClick={onClose} className="w-10 h-10 bg-slate-50 hover:bg-slate-900 hover:text-white rounded-xl flex items-center justify-center transition-all text-slate-400 text-xl font-bold">&times;</button>
@@ -111,10 +125,10 @@ const GmailCenter: React.FC<Props> = ({ user, onClose }) => {
                </button>
             ))}
 
-            <div className="mt-auto p-6 bg-slate-900 rounded-[2rem] border border-blue-500/30">
+            <div className="mt-auto p-6 bg-slate-900 rounded-[2.5rem] border border-blue-500/30">
                <span className="text-[8px] font-black text-blue-400 uppercase tracking-widest mb-2 block">Operasyonel Durum</span>
                <p className="text-[9px] text-white/70 font-bold leading-relaxed italic">
-                 {user?.googleAccessToken ? 'Google API Yetkisi Alındı. Gerçek veriler listeleniyor.' : 'Demo modu aktif. Gerçek veriler için Gmail ile giriş yapın.'}
+                 {user?.googleAccessToken === 'mock_token_12345' ? 'DEMO MODU: Gerçek Gmail bağlantısı için Client ID gereklidir.' : 'Google API Yetkisi Alındı.'}
                </p>
             </div>
          </div>
@@ -125,7 +139,7 @@ const GmailCenter: React.FC<Props> = ({ user, onClose }) => {
                {loading ? (
                   <div className="h-full flex flex-col items-center justify-center opacity-40 animate-pulse">
                      <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                     <span className="text-[10px] font-black uppercase tracking-[0.4em]">Gmail Kutusu Taranıyor...</span>
+                     <span className="text-[10px] font-black uppercase tracking-[0.4em]">Mesajlar Senkronize Ediliyor...</span>
                   </div>
                ) : error ? (
                   <div className="h-full flex flex-col items-center justify-center p-20 text-center">

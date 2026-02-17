@@ -30,7 +30,6 @@ async function callWithRetry<T>(
   throw new Error("Bağlantı sağlanamadı.");
 }
 
-// Fix: Implemented analyzeOwnWebsite to extract company data from a URL using Gemini API
 export const analyzeOwnWebsite = async (url: string): Promise<Partial<User>> => {
   const ai = getAI();
   return callWithRetry(async () => {
@@ -71,7 +70,7 @@ export const findCompanyIntel = async (
   const senderContext = `
 BİZİM ŞİRKETİMİZ: ${sender?.companyName || 'DeepVera AI'}
 BİZİM ÇÖZÜMÜMÜZ: ${sender?.globalPitch || sender?.mainActivity || 'Yapay Zeka Destekli Satış İstihbaratı'}
-HEDEFİMİZ: Belirlenen sektördeki şirketlere değer katmak.
+ANA DEĞERİMİZ: ${sender?.globalPitch || 'Verimlilik ve Otonom Büyüme'}
 `;
 
   return callWithRetry(async () => {
@@ -83,18 +82,18 @@ HEDEFİMİZ: Belirlenen sektördeki şirketlere değer katmak.
       ${senderContext}
 
       GÖREV:
-      1. Şirketin güncel TELEFON NUMARASINI bul. Bu en kritik önceliktir.
-      2. Şirketin prestijini (1-5 yıldız) Google yorumları ve web sitesi kalitesine göre belirle.
-      3. TAMAMEN DOĞAL, İNSAN YAZIMI GİBİ BİR E-POSTA TASLAĞI oluştur.
+      1. Şirketin güncel TELEFON ve EMAIL adresini bul.
+      2. Şirketin en büyük 3 RAKİBİNİ belirle.
+      3. Şirketin bu sektörde yaşadığı olası 2 ana ACI NOKTASINI (Pain Points) analiz et.
+      4. Bu acı noktalarına çözüm sunan ULTRA-STRATEJİK bir e-posta taslağı oluştur.
 
-      E-POSTA YAZIM KURALLARI (ÇOK ÖNEMLİ):
-      - KESİNLİKLE madde işaretleri, "Giriş:", "Konu:" gibi robotik başlıklar KULLANMA.
-      - Metin, 2 veya 3 akıcı paragraftan oluşmalı. 
-      - İlk paragrafta onlara neden ulaştığınızı (sektörel başarıları, web siteleri veya güncel haberleri) samimi bir dille belirtin.
-      - İkinci paragrafta sunduğunuz değeri ("Biz DeepVera olarak...") birbirine bağlı cümlelerle anlatın.
-      - Son bölümde bir tanışma randevusu veya telefon görüşmesi talep edin.
-      - Hitap: "Sayın <b>[Firma Adı]</b> Yetkilisi,"
-      - Dil: Kurumsal, kibar ve akıcı bir İstanbul Türkçesi.
+      E-POSTA TASLAĞI KURALLARI:
+      - Ton: Profesyonel, sonuç odaklı ve merak uyandırıcı.
+      - Yapı: 
+        - Paragraf 1: Samimi bir giriş ve onları neden takip ettiğinize dair (sektördeki yerleri, rakipleriyle kıyaslandığında başarıları vb.) bir vurgu.
+        - Paragraf 2: Tespit ettiğiniz bir soruna (acı noktası) değinme ve "Biz [Şirket Adınız] olarak bu konuda nasıl bir değer katıyoruz" açıklaması.
+        - Paragraf 3: Net bir "Call to Action" (Harekete Geçirici Mesaj). Örn: "Salı günü 10 dakikalık bir demo için müsait misiniz?"
+      - Dil: Akıcı ve kurumsal bir İstanbul Türkçesi.
       - Paragrafları <br><br> ile ayır.
       `,
       config: { 
@@ -105,20 +104,15 @@ HEDEFİMİZ: Belirlenen sektördeki şirketlere değer katmak.
           properties: {
             email: { type: Type.STRING },
             phone: { type: Type.STRING },
-            linkedin: { type: Type.STRING },
-            instagram: { type: Type.STRING },
-            twitter: { type: Type.STRING },
-            icebreaker: { type: Type.STRING },
-            emailSubject: { type: Type.STRING },
-            emailDraft: { type: Type.STRING },
             industry: { type: Type.STRING },
             description: { type: Type.STRING },
-            healthScore: { type: Type.NUMBER },
             starRating: { type: Type.NUMBER },
-            reviewCount: { type: Type.NUMBER },
-            prestigeNote: { type: Type.STRING },
-            isVerified: { type: Type.BOOLEAN },
-            newsTrigger: { type: Type.STRING }
+            competitors: { type: Type.ARRAY, items: { type: Type.STRING } },
+            painPoints: { type: Type.ARRAY, items: { type: Type.STRING } },
+            strategicValue: { type: Type.STRING },
+            emailSubject: { type: Type.STRING },
+            emailDraft: { type: Type.STRING },
+            prestigeNote: { type: Type.STRING }
           }
         }
       },
@@ -142,7 +136,7 @@ export const extractLeadList = async (
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: isUrl 
-        ? `"${queryContext}" sitesindeki katılımcı listesini çıkar. Her firmanın TELEFON numarasını mutlaka tespit et. Limit: ${limit}.`
+        ? `"${queryContext}" sitesindeki katılımcı listesini çıkar. Her firmanın TELEFON ve web sitesini mutlaka tespit et. Limit: ${limit}.`
         : `"${location}" bölgesindeki "${sector}" sektöründen ${limit} şirket listele. Şirketlerin telefon numaralarını mutlaka bul. Atla: ${excludeNames.slice(-10).join(", ")}`,
       config: {
         tools: [{ googleSearch: {} }],
