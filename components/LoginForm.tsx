@@ -19,7 +19,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
   // Google SDK'nın hazır olup olmadığını kontrol et
   useEffect(() => {
     const checkGsi = setInterval(() => {
-      if ((window as any).google?.accounts?.oauth2) {
+      const google = (window as any).google;
+      if (google && google.accounts && google.accounts.oauth2) {
         setIsGsiLoaded(true);
         clearInterval(checkGsi);
       }
@@ -37,12 +38,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
     }
 
     if (!isGsiLoaded) {
-      setStatusMsg({ text: "Google kütüphanesi yükleniyor, lütfen 2 saniye bekleyip tekrar deneyin.", type: 'warning' });
+      setStatusMsg({ text: "Google kütüphanesi yükleniyor, lütfen birkaç saniye bekleyip tekrar deneyin.", type: 'warning' });
       return;
     }
 
     setLoading(true);
-    setStatusMsg({ text: "Google güvenli giriş penceresi açılıyor...", type: 'success' });
+    setStatusMsg({ text: "Google güvenli bağlantı penceresi açılıyor...", type: 'success' });
 
     try {
       const client = (window as any).google.accounts.oauth2.initTokenClient({
@@ -51,8 +52,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
         callback: (response: any) => {
           if (response.error) {
             setLoading(false);
+            console.error("Google Auth Error:", response);
             setStatusMsg({ 
-              text: `Google Hatası: ${response.error_description || response.error}. Lütfen pop-up engelleyiciyi kontrol edin.`, 
+              text: `Google Hatası: ${response.error_description || response.error}. GCP Konsolunda 'Authorized JavaScript Origins' ayarını kontrol edin.`, 
               type: 'error' 
             });
             return;
@@ -80,22 +82,24 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
           })
           .catch(err => {
             console.error("Profile Fetch Error:", err);
-            setStatusMsg({ text: "Google profil bilgileri alınamadı.", type: 'error' });
+            setStatusMsg({ text: "Profil bilgileri alınamadı. İnternet bağlantınızı kontrol edin.", type: 'error' });
             setLoading(false);
           });
         },
         error_callback: (err: any) => {
           setLoading(false);
+          console.error("GSI Init Error:", err);
           setStatusMsg({ 
-            text: `Bağlantı Hatası: ${err.message || 'Google ile iletişim kurulamadı. Client ID veya Origin URL hatası olabilir.'}`, 
+            text: `Bağlantı Hatası: Google SDK başlatılamadı. Client ID'nin Web Uygulaması tipi olduğundan emin olun.`, 
             type: 'error' 
           });
         }
       });
 
-      client.requestAccessToken({ prompt: 'consent' });
+      client.requestAccessToken({ prompt: 'select_account' });
     } catch (err: any) {
       setLoading(false);
+      console.error("Critical System Error:", err);
       setStatusMsg({ text: `Sistem Hatası: ${err.message}`, type: 'error' });
     }
   };
@@ -133,8 +137,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
 
   const saveConfig = () => {
     const trimmedId = clientId.trim();
-    if (!trimmedId) {
-      setStatusMsg({ text: "Geçerli bir Google Client ID girmelisiniz.", type: 'error' });
+    if (!trimmedId || !trimmedId.includes('.apps.googleusercontent.com')) {
+      setStatusMsg({ text: "Geçerli bir Google Client ID girmelisiniz (Örn: ...apps.googleusercontent.com)", type: 'error' });
       return;
     }
     localStorage.setItem(CLIENT_ID_STORAGE_KEY, trimmedId);
@@ -149,7 +153,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
         {/* HUD: Settings Button */}
         <button 
           onClick={() => setView(view === 'config' ? 'login' : 'config')}
-          className={`absolute top-8 right-8 transition-all p-2 rounded-xl ${view === 'config' ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-300 hover:text-blue-600'}`}
+          className={`absolute top-8 right-8 transition-all p-2 rounded-xl ${view === 'config' ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-50 text-slate-300 hover:text-blue-600'}`}
+          title="Google API Ayarları"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         </button>
@@ -167,9 +172,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
 
         {statusMsg && (
           <div className={`mb-8 p-5 border rounded-2xl text-[10px] font-black uppercase tracking-widest text-center animate-fade-in ${
-            statusMsg.type === 'error' ? 'bg-red-50 border-red-100 text-red-500' : 
+            statusMsg.type === 'error' ? 'bg-red-50 border-red-100 text-red-500 shadow-sm' : 
             statusMsg.type === 'warning' ? 'bg-amber-50 border-amber-100 text-amber-600' :
-            'bg-blue-50 border-blue-100 text-blue-600'
+            'bg-blue-50 border-blue-100 text-blue-600 shadow-sm shadow-blue-50'
           }`}>
             {statusMsg.text}
           </div>
@@ -177,27 +182,27 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
 
         {view === 'config' ? (
           <div className="space-y-6 animate-fade-in">
-             <div className="p-6 bg-blue-50 border border-blue-100 rounded-3xl">
-                <label className="text-[9px] font-black text-blue-600 uppercase mb-3 block tracking-[0.2em]">Adım 1: Google Cloud Origin</label>
-                <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-blue-100 mb-3">
+             <div className="p-6 bg-blue-50 border border-blue-100 rounded-[2rem]">
+                <label className="text-[9px] font-black text-blue-600 uppercase mb-3 block tracking-[0.2em]">1. Adım: GCP Yetkili Origin URL</label>
+                <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-blue-100 mb-3 shadow-inner">
                    <code className="flex-1 text-[9px] text-slate-600 font-mono truncate select-all">{currentOrigin}</code>
                    <button 
-                     onClick={() => { navigator.clipboard.writeText(currentOrigin); setStatusMsg({text: "Origin URL Kopyalandı", type:'success'}); }}
-                     className="text-[9px] font-black text-blue-600 uppercase"
+                     onClick={() => { navigator.clipboard.writeText(currentOrigin); setStatusMsg({text: "URL Kopyalandı. GCP Konsoluna yapıştırın.", type:'success'}); }}
+                     className="text-[9px] font-black text-blue-600 uppercase hover:underline"
                    >Kopyala</button>
                 </div>
-                <p className="text-[8px] text-blue-400 font-bold leading-relaxed">
-                   * Google Cloud Console > APIs & Services > Credentials > Web Client sayfasında bu URL'yi <b>Authorized JavaScript Origins</b> kısmına ekleyin.
+                <p className="text-[8px] text-blue-400 font-bold leading-relaxed px-1">
+                   * Google Cloud Console > APIs & Services > Credentials > Web Uygulaması sayfasında bu URL'yi <b>Authorized JavaScript Origins</b> kısmına hatasız ekleyin.
                 </p>
              </div>
              
              <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Adım 2: Google Client ID</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">2. Adım: Google Client ID</label>
                 <input 
                   type="text" 
                   value={clientId}
                   onChange={(e) => setClientId(e.target.value)}
-                  className="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] font-mono outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-50/50 transition-all"
+                  className="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] font-mono outline-none focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-50 transition-all shadow-sm"
                   placeholder="...apps.googleusercontent.com"
                 />
              </div>
