@@ -26,7 +26,6 @@ const AutonomousWorker: React.FC<Props> = ({ user, participants, updateParticipa
   const runAutomationStep = async () => {
     if (!isActive || !user) return;
 
-    // 1. Sıradaki Lead'i Bul
     const target = participants.find(p => p.automationStatus === 'queued' && p.email.includes('@'));
     
     if (!target) {
@@ -35,7 +34,6 @@ const AutonomousWorker: React.FC<Props> = ({ user, participants, updateParticipa
       return;
     }
 
-    // 2. N8N Mimarisinde 'Credential Rotation' (Round-Robin)
     const senderIndex = user.currentSenderIndex || 0;
     const activeSender = senderPool.length > 0 ? senderPool[senderIndex % senderPool.length] : null;
 
@@ -46,37 +44,33 @@ const AutonomousWorker: React.FC<Props> = ({ user, participants, updateParticipa
     }
 
     try {
-      setCurrentTask(`${target.name} gönderiliyor...`);
-      setRotationLog(prev => [`[${new Date().toLocaleTimeString()}] İŞLEM: ${activeSender.email} üzerinden gönderildi.`, ...prev].slice(0, 10));
-
+      setCurrentTask(`${target.name} firmasına gönderim yapılıyor...`);
       updateParticipant(target.id, { automationStatus: 'sending' });
       
-      // 3. TASLAKSIZ DİREKT GÖNDERİM
       await sendGmail(activeSender.accessToken, target.email, target.emailSubject || 'İş Birliği Teklifi', target.emailDraft || '');
+
+      setRotationLog(prev => [`[${new Date().toLocaleTimeString()}] ${target.name} → ${activeSender.email} (BAŞARILI)`, ...prev].slice(0, 15));
 
       updateParticipant(target.id, { 
         automationStatus: 'sent', 
-        sentAt: new Date().toISOString() 
+        funnelStatus: 'contacted',
+        sentAt: new Date().toISOString(),
+        sentFromEmail: activeSender.email // Künye bilgisi eklendi
       });
 
-      // 4. Sıradaki Göndericiye Geç
       if (updateUser && senderPool.length > 0) {
         updateUser({ currentSenderIndex: (senderIndex + 1) % senderPool.length });
       }
 
-      // 5. N8N 'WAIT' PROTOKOLÜ: 7-8 DAKİKA RASTGELE BEKLEME
-      // Mühendislik Kararı: 420sn (7dk) + 0-60sn (Jitter) = 7-8 Dakika Arası
       const randomWait = 420 + Math.floor(Math.random() * 60);
       setCountdown(randomWait);
-      setCurrentTask('Anti-Spam Bekleme...');
+      setCurrentTask('Anti-Spam Koruması Bekleniyor...');
       
       timerRef.current = setTimeout(runAutomationStep, randomWait * 1000);
     } catch (error: any) {
       console.error(error);
       updateParticipant(target.id, { automationStatus: 'failed' });
-      setRotationLog(prev => [`[${new Date().toLocaleTimeString()}] HATA: İletim başarısız.`, ...prev].slice(0, 10));
-      
-      // Hata olsa bile 2 dk sonra diğerine geçmeyi dene
+      setRotationLog(prev => [`[${new Date().toLocaleTimeString()}] HATA: ${target.name} (İletilemedi)`, ...prev].slice(0, 15));
       timerRef.current = setTimeout(runAutomationStep, 120000); 
     }
   };
@@ -105,84 +99,81 @@ const AutonomousWorker: React.FC<Props> = ({ user, participants, updateParticipa
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[400] bg-slate-900/90 backdrop-blur-3xl flex items-center justify-center p-6 animate-fade-in">
-      <div className="bg-white w-full max-w-2xl rounded-[4rem] shadow-2xl border border-white overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[1100] bg-slate-900/90 backdrop-blur-xl flex items-center justify-center p-6 animate-fade-in">
+      <div className="bg-white w-full max-w-3xl rounded-[3rem] shadow-2xl overflow-hidden flex flex-col h-[85vh] border border-white">
         
-        <div className="p-10 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+        <div className="p-10 border-b border-slate-50 flex justify-between items-center bg-slate-50/50 shrink-0">
            <div className="flex items-center gap-5">
-              <div className="w-16 h-16 bg-slate-900 text-white rounded-[1.8rem] flex items-center justify-center text-4xl font-black shadow-2xl">🤖</div>
+              <div className="w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center text-3xl font-black shadow-xl">🤖</div>
               <div>
-                 <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter leading-none">Otonom Sevk Ünitesi</h3>
-                 <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.3em] mt-2 italic">N8N Simulation Engine v4.0</p>
+                 <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Otonom Sevk Ünitesi</h3>
+                 <p className="text-[9px] font-black text-blue-600 uppercase tracking-[0.3em] mt-1 italic">N8N Simulation Core v5.0</p>
               </div>
            </div>
-           <button onClick={onClose} className="w-14 h-14 flex items-center justify-center bg-white rounded-2xl text-slate-300 hover:text-red-500 text-4xl shadow-sm transition-all">&times;</button>
+           <button onClick={onClose} className="w-12 h-12 flex items-center justify-center bg-white rounded-xl text-slate-300 hover:text-red-500 text-3xl shadow-sm transition-all">&times;</button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar bg-slate-50/20">
            
-           <div className="p-10 bg-slate-900 rounded-[3rem] border border-blue-500/30 shadow-2xl relative overflow-hidden">
+           <div className="p-10 bg-slate-900 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 blur-[100px]"></div>
               
-              <div className="flex justify-between items-start mb-10 relative z-10">
+              <div className="relative z-10 flex justify-between items-center mb-8">
                  <div>
-                    <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.5em] mb-4 block">Durum</span>
-                    <div className="flex items-center gap-4">
-                       <div className={`w-3 h-3 rounded-full ${isActive ? 'bg-emerald-500 animate-ping' : 'bg-slate-600'}`}></div>
-                       <p className="text-xl font-black text-white">{currentTask}</p>
-                    </div>
+                    <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-2 block">Operasyonel Durum</span>
+                    <h4 className="text-2xl font-black text-white">{currentTask}</h4>
                  </div>
                  {countdown > 0 && (
                     <div className="text-right">
-                       <span className="text-[10px] text-white/30 uppercase tracking-[0.4em] mb-2 block">Kalan Bekleme</span>
-                       <div className="text-5xl font-black text-blue-400 font-mono tracking-tighter">{formatTime(countdown)}</div>
+                       <span className="text-[9px] text-white/40 uppercase tracking-widest mb-1 block">Anti-Spam Sayaç</span>
+                       <div className="text-4xl font-black text-blue-400 font-mono">{formatTime(countdown)}</div>
                     </div>
                  )}
               </div>
-              
-              <div className="bg-white/5 rounded-[2rem] p-8 border border-white/5">
-                 <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.6em] mb-3 block">Sistem Günlüğü</span>
-                 <div className="space-y-2 h-32 overflow-y-auto custom-scrollbar pr-2">
-                    {rotationLog.map((log, i) => (
-                       <div key={i} className="text-[10px] font-bold font-mono text-blue-100/40 truncate">{log}</div>
+
+              <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden mb-8">
+                 <div className={`h-full bg-blue-500 transition-all duration-1000 ${isActive ? 'w-full animate-pulse' : 'w-0'}`}></div>
+              </div>
+
+              <div className="bg-white/5 rounded-2xl p-6 border border-white/5">
+                 <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 block italic">Otonom İşlem Günlüğü</span>
+                 <div className="space-y-2 h-40 overflow-y-auto custom-scrollbar pr-2 text-[10px] font-mono text-blue-100/60">
+                    {rotationLog.length === 0 ? 'Sistem başlatılmaya hazır...' : rotationLog.map((log, i) => (
+                       <div key={i} className="flex gap-4 border-b border-white/5 pb-2">
+                          <span className="text-blue-400">#</span>
+                          <span>{log}</span>
+                       </div>
                     ))}
                  </div>
               </div>
            </div>
 
            <div className="grid grid-cols-3 gap-6">
-              <div className="p-10 bg-slate-50 rounded-[2.5rem] border border-slate-100 text-center">
-                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 block">Kuyruk</span>
-                 <span className="text-5xl font-black text-slate-900">{queuedLeads.length}</span>
+              <div className="p-8 bg-white border border-slate-100 rounded-[2rem] text-center shadow-sm">
+                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Kuyruk</span>
+                 <span className="text-4xl font-black text-slate-900">{queuedLeads.length}</span>
               </div>
-              <div className="p-10 bg-blue-50 rounded-[2.5rem] border border-blue-100 text-center">
-                 <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-4 block">Hesaplar</span>
-                 <span className="text-5xl font-black text-blue-600">{senderPool.length}</span>
+              <div className="p-8 bg-white border border-slate-100 rounded-[2rem] text-center shadow-sm">
+                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Aktif Kanallar</span>
+                 <span className="text-4xl font-black text-blue-600">{senderPool.length}</span>
               </div>
-              <div className="p-10 bg-emerald-50 rounded-[2.5rem] border border-emerald-100 text-center">
-                 <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4 block">Başarı</span>
-                 <span className="text-5xl font-black text-emerald-600">{participants.filter(p => p.automationStatus === 'sent').length}</span>
+              <div className="p-8 bg-white border border-slate-100 rounded-[2rem] text-center shadow-sm">
+                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Başarı Oranı</span>
+                 <span className="text-4xl font-black text-emerald-600">%{participants.length > 0 ? Math.round((participants.filter(p => p.automationStatus === 'sent').length / participants.length) * 100) : 0}</span>
               </div>
            </div>
         </div>
 
-        <div className="p-10 bg-slate-50 shrink-0 border-t border-slate-100">
+        <div className="p-10 bg-white border-t border-slate-100 shrink-0">
            <button 
              onClick={() => setIsActive(!isActive)}
              disabled={(queuedLeads.length === 0 && !isActive) || senderPool.length === 0}
-             className={`w-full py-8 rounded-[2.5rem] font-black text-sm uppercase tracking-[0.4em] shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-6 ${
-               isActive ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-blue-600 text-white hover:bg-slate-900 shadow-blue-400'
+             className={`w-full py-7 rounded-[2rem] font-black text-xs uppercase tracking-[0.4em] shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-6 ${
+               isActive ? 'bg-red-500 text-white' : 'bg-slate-900 text-white'
              }`}
            >
-              {isActive ? (
-                <>DÖNGÜYÜ DURDUR <span className="text-3xl">⏹</span></>
-              ) : (
-                <>OTONOM SEVKI BAŞLAT <span className="text-3xl">⚡</span></>
-              )}
+              {isActive ? 'DÖNGÜYÜ DURDUR' : 'OTONOM GÖNDERİMİ BAŞLAT'}
            </button>
-           <p className="text-center text-[9px] font-black text-slate-400 uppercase tracking-widest mt-8">
-              * Teknik: Her işlem arası 7-8 dk beklenir. Tarayıcı sekmesini kapatmayın.
-           </p>
         </div>
       </div>
     </div>

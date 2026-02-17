@@ -25,8 +25,10 @@ export interface Participant {
   automationStatus: 'idle' | 'queued' | 'sent' | 'failed' | 'sending'; 
   location?: string;
   isSaved?: boolean;
-  funnelStatus?: 'waiting' | 'contacted' | 'replied';
+  funnelStatus?: 'waiting' | 'contacted' | 'replied' | 'meeting_scheduled';
   sentAt?: string;
+  repliedAt?: string;
+  sentFromEmail?: string; // Hangi hesaptan gönderildiği
   starRating?: number;
   competitors?: string[];
   painPoints?: string[];
@@ -74,6 +76,7 @@ export interface SavedSearch {
   participants: Participant[];
 }
 
+// Fixed missing types for IntelligenceCenter and UserActivityChart
 export interface Sector {
   id: string;
   label: string;
