@@ -71,25 +71,35 @@ export const findCompanyIntel = async (
   const ai = getAI();
   
   const senderContext = `
-BİZİM PROFİLİMİZ:
-- Şirket: ${sender?.companyName || 'DeepVera AI'}
-- Değer Önerimiz: ${sender?.globalPitch || sender?.mainActivity || 'AI Satış İstihbaratı'}
-- Hedef Kitle: ${sender?.targetAudience || 'B2B Karar Vericiler'}
+BİZİM ŞİRKETİMİZ: ${sender?.companyName || 'DeepVera AI'}
+BİZİM ÇÖZÜMÜMÜZ: ${sender?.globalPitch || sender?.mainActivity || 'Yapay Zeka Destekli Satış İstihbaratı'}
+HEDEFİMİZ: Belirlenen sektördeki şirketlere değer katmak.
 `;
 
   return callWithRetry(async () => {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `
-      HEDEF: "${name}" (${website || 'N/A'})
+      HEDEF ŞİRKET: "${name}" (${website || 'N/A'})
       SEKTÖR: ${sector}
       ${senderContext}
 
       GÖREV:
-      1. Şirket haberlerini bul.
-      2. İletişim verilerini (email, linkedin) tespit et.
-      3. ICEBREAKER: Haberlerine atıfta bulunarak ilgi çekici bir giriş yaz.
-      4. EMAIL DRAFT: Bizim çözümümüzü (${sender?.globalPitch}) onların sektörüne göre özelleştirip 1:1 e-posta yaz.
+      1. Hedef şirket hakkında güncel bir haber veya gelişme bul.
+      2. Şirketin prestijini (starRating) belirle (1-5 arası). Google yorumları ve web sitesi kalitesini baz al.
+      3. Şirketin güncel TELEFON NUMARASINI ve iletişim bilgilerini mutlaka tespit et.
+      4. DOĞAL TÜMCE DÜZENİNDE, AKICI BİR E-POSTA TASLAĞI oluştur. 
+      
+      E-POSTA YAZIM KURALLARI (KRİTİK):
+      - KESİNLİKLE "Giriş:", "Gelişme:", "Neden Biz:" gibi başlıklar veya madde işaretleri KULLANMA.
+      - Metin, tıpkı bir insanın kaleminden çıkmış gibi, birbirine bağlı paragraflar şeklinde olmalı.
+      - İlk paragrafta onlara neden ulaştığını (haberleri, başarıları vb.) anlat.
+      - İkinci paragrafta nazikçe kendi katma değerinden bahset.
+      - Üçüncü paragrafta bir kahve daveti veya tanışma toplantısı önerisiyle bitir.
+      - Paragrafları <br><br> ile ayır.
+      - Şirket isimlerini <b>Firma Adı</b> şeklinde yap.
+      - Hitap: "Sayın <b>[Firma]</b> Yetkilisi," ile başla.
+      - Dil profesyonel, nazik ve akıcı bir İstanbul Türkçesi olmalı.
       `,
       config: { 
         tools: [{ googleSearch: {} }],
@@ -106,7 +116,11 @@ BİZİM PROFİLİMİZ:
             emailSubject: { type: Type.STRING },
             emailDraft: { type: Type.STRING },
             industry: { type: Type.STRING },
+            description: { type: Type.STRING },
             healthScore: { type: Type.NUMBER },
+            starRating: { type: Type.NUMBER },
+            reviewCount: { type: Type.NUMBER },
+            prestigeNote: { type: Type.STRING },
             isVerified: { type: Type.BOOLEAN },
             newsTrigger: { type: Type.STRING }
           }
@@ -132,8 +146,8 @@ export const extractLeadList = async (
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: isUrl 
-        ? `"${queryContext}" sitesindeki katılımcı listesini çıkar. Limit: ${limit}.`
-        : `"${location}" bölgesindeki "${sector}" sektöründen ${limit} şirket listele. Atla: ${excludeNames.slice(-10).join(", ")}`,
+        ? `"${queryContext}" sitesindeki katılımcı listesini çıkar. Her firmanın adını, varsa web sitesini ve mutlaka TELEFON numarasını bulmaya çalış. Limit: ${limit}.`
+        : `"${location}" bölgesindeki "${sector}" sektöründen ${limit} şirket listele. Her birinin telefon numarasını tespit etmeye çalış. Atla: ${excludeNames.slice(-10).join(", ")}`,
       config: {
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
@@ -147,6 +161,7 @@ export const extractLeadList = async (
                 properties: {
                   name: { type: Type.STRING },
                   website: { type: Type.STRING },
+                  phone: { type: Type.STRING },
                   location: { type: Type.STRING }
                 },
                 required: ["name"]

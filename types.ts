@@ -7,6 +7,7 @@ export interface Participant {
   email: string;
   linkedin?: string;
   instagram?: string;
+  facebook?: string;
   twitter?: string;
   industry?: string;
   description?: string;
@@ -14,22 +15,39 @@ export interface Participant {
   emailSubject?: string;
   emailDraft?: string;
   icebreaker?: string;
-  competitors?: string[];
-  healthScore?: number;
   location?: string;
   isVerified?: boolean;
   automationStatus: 'idle' | 'queued' | 'sent' | 'failed' | 'sending'; 
-  neuralLogs?: string[];
-  newsTrigger?: string;
+  tags?: string[];
+  notes?: string;
+  isSaved?: boolean;
+  funnelStatus?: 'waiting' | 'contacted' | 'replied';
   sentAt?: string;
+  nextAttemptAt?: number;
+  healthScore?: number;
+  newsTrigger?: string;
+  starRating?: number; // 1-5 arası puan
+  reviewCount?: number; // Toplam yorum sayısı
+  prestigeNote?: string; // Puanlama gerekçesi
+}
+
+export interface SavedSearch {
+  id: string;
+  name: string;
+  date: string;
+  city: string;
+  sector: string;
+  count: number;
+  participants: Participant[];
 }
 
 export interface AutomationConfig {
-  minInterval: number; // Dakika
-  maxInterval: number; // Dakika
+  minInterval: number; 
+  maxInterval: number; 
   isActive: boolean;
   dailyLimit: number;
   sentToday: number;
+  isCenterActive: boolean;
 }
 
 export interface User {
@@ -47,17 +65,17 @@ export interface User {
   companyDescription?: string;
   companyLogo?: string;
   authorizedPerson?: string;
+  officialAddress?: string;
   n8nWebhookUrl?: string;
   isGmailConnected?: boolean;
   googleAccessToken?: string;
   mainActivity?: string;
-  competitorsInfo?: string;
   targetAudience?: string;
   globalPitch?: string;
   automationConfig?: AutomationConfig;
 }
 
-export type ViewState = 'landing' | 'login' | 'dashboard' | 'admin' | 'gmail_center';
+export type ViewState = 'landing' | 'login' | 'dashboard' | 'library';
 
 export enum AppStatus {
   IDLE = 'IDLE',
