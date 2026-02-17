@@ -4,60 +4,6 @@ import { Participant, User } from "../types";
 
 const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-async function callWithRetry<T>(
-  fn: () => Promise<T>, 
-  onRetry?: (msg: string) => void,
-  retries = 3, 
-  initialDelay = 4000
-): Promise<T> {
-  let currentDelay = initialDelay;
-  for (let i = 0; i < retries; i++) {
-    try {
-      return await fn();
-    } catch (error: any) {
-      const isRetryable = error.status === 429 || error.status === 503 || error.status === 500;
-      if (i < retries - 1 && isRetryable) {
-        if (onRetry) onRetry(`Sistem meşgul, tekrar deneniyor... (${i + 1}/${retries})`);
-        await sleep(currentDelay);
-        currentDelay *= 2;
-        continue;
-      }
-      throw error;
-    }
-  }
-  throw new Error("Bağlantı sağlanamadı.");
-}
-
-export const analyzeOwnWebsite = async (url: string): Promise<Partial<User>> => {
-  const ai = getAI();
-  return callWithRetry(async () => {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `Şu web sitesini analiz et ve şirket bilgilerini çıkar: ${url}. 
-      Şirketin adını (companyName), ana faaliyet alanını (mainActivity), hedef kitlesini (targetAudience), 
-      global asansör cümlesini (globalPitch) ve resmi adresini (officialAddress) belirle.
-      Lütfen yanıtı Türkçe olarak ver.`,
-      config: { 
-        tools: [{ googleSearch: {} }],
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            companyName: { type: Type.STRING },
-            mainActivity: { type: Type.STRING },
-            targetAudience: { type: Type.STRING },
-            globalPitch: { type: Type.STRING },
-            officialAddress: { type: Type.STRING }
-          }
-        }
-      },
-    });
-    return JSON.parse(response.text || '{}');
-  });
-};
-
 export const findCompanyIntel = async (
   name: string, 
   website?: string, 
@@ -69,8 +15,8 @@ export const findCompanyIntel = async (
   
   const senderContext = `
 BİZİM ŞİRKETİMİZ: ${sender?.companyName || 'DeepVera AI'}
-BİZİM ÇÖZÜMÜMÜZ: ${sender?.globalPitch || sender?.mainActivity || 'Yapay Zeka Destekli Satış İstihbaratı'}
-ANA DEĞERİMİZ: ${sender?.globalPitch || 'Verimlilik ve Otonom Büyüme'}
+BİZİM ÇÖZÜMÜMÜZ: ${sender?.globalPitch || 'Yapay Zeka Destekli Satış ve İstihbarat'}
+TEMSİLCİMİZ: ${sender?.authorizedPerson || sender?.name}
 `;
 
   return callWithRetry(async () => {
@@ -84,17 +30,16 @@ ANA DEĞERİMİZ: ${sender?.globalPitch || 'Verimlilik ve Otonom Büyüme'}
       GÖREV:
       1. Şirketin güncel TELEFON ve EMAIL adresini bul.
       2. Şirketin en büyük 3 RAKİBİNİ belirle.
-      3. Şirketin bu sektörde yaşadığı olası 2 ana ACI NOKTASINI (Pain Points) analiz et.
-      4. Bu acı noktalarına çözüm sunan ULTRA-STRATEJİK bir e-posta taslağı oluştur.
+      3. Şirketin bu sektördeki en kritik 2 "ACI NOKTASINI" (Pain Points) analiz et.
+      4. Bu acı noktalarına odaklanan, STRATEJİK ve İKNA EDİCİ bir e-posta taslağı yaz.
 
-      E-POSTA TASLAĞI KURALLARI:
-      - Ton: Profesyonel, sonuç odaklı ve merak uyandırıcı.
-      - Yapı: 
-        - Paragraf 1: Samimi bir giriş ve onları neden takip ettiğinize dair (sektördeki yerleri, rakipleriyle kıyaslandığında başarıları vb.) bir vurgu.
-        - Paragraf 2: Tespit ettiğiniz bir soruna (acı noktası) değinme ve "Biz [Şirket Adınız] olarak bu konuda nasıl bir değer katıyoruz" açıklaması.
-        - Paragraf 3: Net bir "Call to Action" (Harekete Geçirici Mesaj). Örn: "Salı günü 10 dakikalık bir demo için müsait misiniz?"
-      - Dil: Akıcı ve kurumsal bir İstanbul Türkçesi.
-      - Paragrafları <br><br> ile ayır.
+      E-POSTA YAZIM PROTOKOLÜ:
+      - Ton: Son derece profesyonel, merak uyandırıcı ve çözüm odaklı.
+      - Yapı (3 Paragraf):
+        - Paragraf 1 (Buz Kırıcı): Şirketin sektördeki başarısına veya rakiplerine kıyasla konumuna samimi bir atıf.
+        - Paragraf 2 (Değer Önerisi): "${name}" için tespit ettiğin bir probleme değin ve "Biz ${sender?.companyName} olarak bunu nasıl çözüyoruz" açıkla.
+        - Paragraf 3 (CTA): Net ve düşük bariyerli bir eylem çağrısı. Örn: "Salı sabahı 5 dakikalık bir görüşme uygun mudur?"
+      - Dil: Akıcı İstanbul Türkçesi. Paragraflar arasında <br><br> kullan.
       `,
       config: { 
         tools: [{ googleSearch: {} }],
@@ -105,14 +50,11 @@ ANA DEĞERİMİZ: ${sender?.globalPitch || 'Verimlilik ve Otonom Büyüme'}
             email: { type: Type.STRING },
             phone: { type: Type.STRING },
             industry: { type: Type.STRING },
-            description: { type: Type.STRING },
             starRating: { type: Type.NUMBER },
             competitors: { type: Type.ARRAY, items: { type: Type.STRING } },
             painPoints: { type: Type.ARRAY, items: { type: Type.STRING } },
-            strategicValue: { type: Type.STRING },
             emailSubject: { type: Type.STRING },
-            emailDraft: { type: Type.STRING },
-            prestigeNote: { type: Type.STRING }
+            emailDraft: { type: Type.STRING }
           }
         }
       },
@@ -121,48 +63,62 @@ ANA DEĞERİMİZ: ${sender?.globalPitch || 'Verimlilik ve Otonom Büyüme'}
   }, onRetry);
 };
 
-export const extractLeadList = async (
-  queryContext: string, 
-  sector: string, 
-  location: string,
-  limit: number,
-  excludeNames: string[],
-  onRetry?: (msg: string) => void
-): Promise<Partial<Participant>[]> => {
+async function callWithRetry<T>(fn: () => Promise<T>, onRetry?: (msg: string) => void, retries = 3, initialDelay = 4000): Promise<T> {
+  let currentDelay = initialDelay;
+  for (let i = 0; i < retries; i++) {
+    try { return await fn(); } catch (error: any) {
+      if (i < retries - 1 && (error.status === 429 || error.status >= 500)) {
+        if (onRetry) onRetry(`Sistem yoğun, tekrar deneniyor... (${i + 1}/${retries})`);
+        await new Promise(r => setTimeout(r, currentDelay));
+        currentDelay *= 2; continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error("Bağlantı sağlanamadı.");
+}
+
+export const extractLeadList = async (queryContext: string, sector: string, location: string, limit: number, excludeNames: string[]): Promise<Partial<Participant>[]> => {
   const ai = getAI();
   const isUrl = queryContext.startsWith('http');
+  const prompt = isUrl 
+    ? `"${queryContext}" sitesindeki katılımcı listesini çıkar. Her firmanın TELEFON ve web sitesini tespit et. Limit: ${limit}.`
+    : `"${location}" bölgesindeki "${sector}" sektöründen ${limit} şirket listele. Atla: ${excludeNames.join(", ")}`;
 
-  return callWithRetry(async () => {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: isUrl 
-        ? `"${queryContext}" sitesindeki katılımcı listesini çıkar. Her firmanın TELEFON ve web sitesini mutlaka tespit et. Limit: ${limit}.`
-        : `"${location}" bölgesindeki "${sector}" sektöründen ${limit} şirket listele. Şirketlerin telefon numaralarını mutlaka bul. Atla: ${excludeNames.slice(-10).join(", ")}`,
-      config: {
-        tools: [{ googleSearch: {} }],
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            leads: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  name: { type: Type.STRING },
-                  website: { type: Type.STRING },
-                  phone: { type: Type.STRING },
-                  location: { type: Type.STRING }
-                },
-                required: ["name"]
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: prompt,
+    config: {
+      tools: [{ googleSearch: {} }],
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          leads: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                name: { type: Type.STRING },
+                website: { type: Type.STRING },
+                phone: { type: Type.STRING },
+                location: { type: Type.STRING }
               }
             }
           }
         }
       }
-    });
+    }
+  });
+  return JSON.parse(response.text || '{"leads":[]}').leads || [];
+};
 
-    const data = JSON.parse(response.text || '{"leads":[]}');
-    return data.leads || [];
-  }, onRetry);
+export const analyzeOwnWebsite = async (url: string): Promise<Partial<User>> => {
+  const ai = getAI();
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: `Web sitesini analiz et: ${url}. Şirket adı, faaliyet alanı, değer önerisi çıkar.`,
+    config: { tools: [{ googleSearch: {} }], responseMimeType: "application/json" }
+  });
+  return JSON.parse(response.text || '{}');
 };

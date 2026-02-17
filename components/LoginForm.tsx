@@ -23,6 +23,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
   const handleSimulateGoogle = () => {
     setLoading(true);
     setTimeout(() => {
+      // Added missing mandatory properties to satisfy the User interface
       const mockUser: User = {
         username: 'google_user_' + Math.floor(Math.random() * 1000),
         name: 'Google Sync Kullanıcısı',
@@ -33,7 +34,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
         provider: 'google',
         tokenBalance: 250,
         isGmailConnected: true,
-        googleAccessToken: 'mock_token_' + Date.now()
+        googleAccessToken: 'mock_token_' + Date.now(),
+        senderAccounts: [],
+        currentSenderIndex: 0
       };
       onLogin(mockUser, true);
     }, 1500);
@@ -71,6 +74,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
           })
           .then(res => res.json())
           .then(profile => {
+            // Added missing mandatory properties to satisfy the User interface
             const googleUser: User = {
               username: profile.email.split('@')[0],
               name: profile.name,
@@ -81,7 +85,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
               provider: 'google',
               tokenBalance: 500,
               isGmailConnected: true,
-              googleAccessToken: response.access_token
+              googleAccessToken: response.access_token,
+              senderAccounts: [],
+              currentSenderIndex: 0
             };
             onLogin(googleUser, true);
           })
@@ -105,6 +111,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
     const normalizedPass = formData.password.trim();
 
     if (normalizedUser === 'admin' && normalizedPass === 'admin') {
+      // Added missing mandatory properties to satisfy the User interface
       onLogin({ 
         username: 'admin', 
         name: 'DeepVera Admin', 
@@ -112,7 +119,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
         isPro: true, 
         role: 'admin', 
         provider: 'local', 
-        tokenBalance: 999999 
+        tokenBalance: 999999,
+        senderAccounts: [],
+        currentSenderIndex: 0
       }, true);
       return;
     }
@@ -121,13 +130,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
     const db: any[] = saved ? JSON.parse(saved) : [];
 
     if (view === 'signup') {
+      // Added missing mandatory properties to satisfy the User interface
       const newUser = { 
         id: Math.random().toString(36).substr(2, 9),
         username: normalizedUser,
         password: normalizedPass,
         email: formData.email,
         name: formData.name || normalizedUser,
-        tokenBalance: 100, isPro: false, role: 'user', provider: 'local' 
+        tokenBalance: 100, 
+        isPro: false, 
+        role: 'user' as const, 
+        provider: 'local' as const,
+        senderAccounts: [],
+        currentSenderIndex: 0
       };
       db.push(newUser);
       localStorage.setItem(USERS_DB_KEY, JSON.stringify(db));

@@ -1,4 +1,12 @@
 
+export interface SenderAccount {
+  id: string;
+  email: string;
+  password?: string;
+  status: 'active' | 'cooldown' | 'failed';
+  usageCount: number;
+}
+
 export interface Participant {
   id: string;
   name: string;
@@ -6,58 +14,24 @@ export interface Participant {
   phone: string;
   email: string;
   linkedin?: string;
-  instagram?: string;
-  facebook?: string;
-  twitter?: string;
   industry?: string;
   description?: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
   emailSubject?: string;
   emailDraft?: string;
-  icebreaker?: string;
-  location?: string;
-  isVerified?: boolean;
   automationStatus: 'idle' | 'queued' | 'sent' | 'failed' | 'sending'; 
-  tags?: string[];
-  notes?: string;
+  location?: string;
   isSaved?: boolean;
   funnelStatus?: 'waiting' | 'contacted' | 'replied';
   sentAt?: string;
-  nextAttemptAt?: number;
-  healthScore?: number;
-  newsTrigger?: string;
   starRating?: number;
-  reviewCount?: number;
-  prestigeNote?: string;
-  // Stratejik Alanlar
   competitors?: string[];
   painPoints?: string[];
   strategicValue?: string;
-  growthPotential?: string;
-}
-
-export interface SavedSearch {
-  id: string;
-  name: string;
-  date: string;
-  city: string;
-  sector: string;
-  count: number;
-  participants: Participant[];
-}
-
-export interface AutomationConfig {
-  minInterval: number; 
-  maxInterval: number; 
-  isActive: boolean;
-  dailyLimit: number;
-  sentToday: number;
-  isCenterActive: boolean;
 }
 
 export interface User {
   username: string;
-  password?: string;
   email: string;
   name: string; 
   avatar?: string;
@@ -67,17 +41,14 @@ export interface User {
   tokenBalance: number;
   companyName?: string;
   companyWebsite?: string;
-  companyDescription?: string;
-  companyLogo?: string;
   authorizedPerson?: string;
   officialAddress?: string;
-  n8nWebhookUrl?: string;
   isGmailConnected?: boolean;
   googleAccessToken?: string;
-  mainActivity?: string;
-  targetAudience?: string;
+  senderAccounts: SenderAccount[];
+  currentSenderIndex: number;
+  // Added globalPitch to resolve property error in geminiService.ts
   globalPitch?: string;
-  automationConfig?: AutomationConfig;
 }
 
 export type ViewState = 'landing' | 'login' | 'dashboard' | 'library';
@@ -90,14 +61,28 @@ export enum AppStatus {
   FAILED = 'FAILED'
 }
 
+// Added SavedSearch to resolve import error in App.tsx
+export interface SavedSearch {
+  id: string;
+  name: string;
+  date: string;
+  city: string;
+  sector: string;
+  count: number;
+  participants: Participant[];
+}
+
+// Added Sector to resolve import error in IntelligenceCenter.tsx
 export interface Sector {
   id: string;
   label: string;
   icon: string;
 }
 
+// Added SearchMode to resolve import error in IntelligenceCenter.tsx
 export type SearchMode = 'db' | 'live';
 
+// Added ActivityPoint to resolve import error in UserActivityChart.tsx
 export interface ActivityPoint {
   date: string;
   tokensSpent: number;
