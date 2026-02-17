@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>AI DeepVera: Kurumsal İstihbarat Paneli</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- GOOGLE IDENTITY SERVICES - OAUTH2 İÇİN KRİTİK -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -53,21 +54,6 @@
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes scan {
-          0% { transform: translateY(-100%); opacity: 0; }
-          50% { opacity: 0.5; }
-          100% { transform: translateY(100%); opacity: 0; }
-        }
-        .scan-line {
-          height: 100px;
-          background: linear-gradient(to bottom, transparent, rgba(37, 99, 235, 0.2), transparent);
-          animation: scan 4s linear infinite;
-        }
-        @media screen and (max-width: 768px) {
-          input, select, textarea {
-            font-size: 16px !important;
-          }
         }
     </style>
 <script type="importmap">

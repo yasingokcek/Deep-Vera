@@ -5,6 +5,9 @@ import { User } from '../types';
 const USERS_DB_KEY = 'deepvera_users_database';
 const CONFIG_KEY = 'deepvera_google_config';
 
+// ADIM 6: Client ID'yi Koda Yaz
+const GOOGLE_CLIENT_ID = '622487947070-dtn0iqveim78kor9l4ljthsimmtndl4l.apps.googleusercontent.com';
+
 interface LoginFormProps {
   onLogin: (user: User, remember: boolean) => void;
   onCancel: () => void;
@@ -16,14 +19,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
   const [showConfig, setShowConfig] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ text: string, type: 'error' | 'success' | 'warning' | 'info' } | null>(null);
   
-  const [clientId, setClientId] = useState(() => localStorage.getItem(CONFIG_KEY) || '');
+  const [clientId, setClientId] = useState(() => localStorage.getItem(CONFIG_KEY) || GOOGLE_CLIENT_ID);
   const [formData, setFormData] = useState({ username: '', password: '', email: '', name: '' });
 
-  // KRİTİK: Google Sync Bypass Protokolü
   const handleSimulateGoogle = () => {
     setLoading(true);
     setTimeout(() => {
-      // Added missing mandatory properties to satisfy the User interface
       const mockUser: User = {
         username: 'google_user_' + Math.floor(Math.random() * 1000),
         name: 'Google Sync Kullanıcısı',
@@ -43,10 +44,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
   };
 
   const handleGoogleLogin = () => {
-    // Eğer Client ID yoksa veya placeholder ise simülasyon sun
-    if (!clientId || clientId.includes('BURAYA') || clientId.length < 10) {
+    if (!clientId || clientId.length < 10) {
       setStatusMsg({ 
-        text: "GOOGLE YAPILANDIRMASI EKSİK: Gerçek Google Cloud bağlantısı için Client ID girilmelidir. Uygulamayı Gmail özellikleriyle denemek için 'BYPASS ET' modunu kullanabilirsiniz.", 
+        text: "GOOGLE YAPILANDIRMASI EKSİK: Gerçek Google Cloud bağlantısı için Client ID gereklidir. Uygulamayı Gmail özellikleriyle denemek için 'BYPASS ET' modunu kullanabilirsiniz.", 
         type: 'info' 
       });
       return;
@@ -74,7 +74,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
           })
           .then(res => res.json())
           .then(profile => {
-            // Added missing mandatory properties to satisfy the User interface
             const googleUser: User = {
               username: profile.email.split('@')[0],
               name: profile.name,
@@ -111,7 +110,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
     const normalizedPass = formData.password.trim();
 
     if (normalizedUser === 'admin' && normalizedPass === 'admin') {
-      // Added missing mandatory properties to satisfy the User interface
       onLogin({ 
         username: 'admin', 
         name: 'DeepVera Admin', 
@@ -130,7 +128,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
     const db: any[] = saved ? JSON.parse(saved) : [];
 
     if (view === 'signup') {
-      // Added missing mandatory properties to satisfy the User interface
       const newUser = { 
         id: Math.random().toString(36).substr(2, 9),
         username: normalizedUser,
@@ -165,7 +162,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
 
   return (
     <div className="fixed inset-0 bg-[#0f172a] flex items-center justify-center p-4 z-[200] overflow-hidden">
-      {/* Dynamic Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
         <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-600 rounded-full blur-[150px] animate-pulse"></div>
         <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-indigo-600 rounded-full blur-[150px] animate-pulse delay-700"></div>
@@ -173,7 +169,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
 
       <div className="bg-white/95 backdrop-blur-3xl w-full max-w-lg rounded-[4.5rem] shadow-[0_60px_150px_-30px_rgba(0,0,0,0.6)] border border-white/50 flex flex-col p-14 relative animate-fade-in overflow-hidden">
         
-        {/* Settings Button */}
         <button 
           onClick={() => setShowConfig(!showConfig)}
           className="absolute top-10 right-10 w-12 h-12 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all z-20 shadow-sm"
