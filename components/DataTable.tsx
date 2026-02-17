@@ -9,14 +9,21 @@ interface Props {
   onSelectParticipant: (p: Participant) => void;
   onExport: () => void;
   onClear: () => void;
+  updateParticipant: (id: string, updates: Partial<Participant>) => void;
 }
 
-const DataTable: React.FC<Props> = ({ participants, onSelectParticipant, onClear, onExport }) => {
+const DataTable: React.FC<Props> = ({ participants, onSelectParticipant, onClear, onExport, updateParticipant }) => {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const handleRowClick = (p: Participant) => {
     setActiveId(p.id);
     onSelectParticipant(p);
+  };
+
+  const handleQueueToggle = (e: React.MouseEvent, p: Participant) => {
+    e.stopPropagation();
+    const nextStatus = p.automationStatus === 'idle' ? 'queued' : 'idle';
+    updateParticipant(p.id, { automationStatus: nextStatus as any });
   };
 
   if (participants.length === 0) {
@@ -59,8 +66,23 @@ const DataTable: React.FC<Props> = ({ participants, onSelectParticipant, onClear
                 : 'border-slate-100 hover:border-blue-200 hover:shadow-lg hover:translate-y-[-1px]'
               }`}
             >
+              {/* Automation Status Badge */}
+              <div className="absolute top-4 right-4 z-10">
+                 {p.email.includes('@') && (
+                    <button 
+                      onClick={(e) => handleQueueToggle(e, p)}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                        p.automationStatus === 'queued' ? 'bg-blue-600 text-white shadow-lg' : 
+                        p.automationStatus === 'sent' ? 'bg-emerald-500 text-white' : 
+                        'bg-slate-50 text-slate-300 hover:bg-blue-50 hover:text-blue-600'
+                      }`}
+                    >
+                       {p.automationStatus === 'sent' ? '✓' : p.automationStatus === 'sending' ? '⌛' : '✉️'}
+                    </button>
+                 )}
+              </div>
+
               <div className="p-5">
-                {/* Header: Logo & Basic Info */}
                 <div className="flex items-start gap-4 mb-4">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black shrink-0 transition-all duration-500 shadow-sm ${
                     activeId === p.id ? 'bg-blue-600 text-white' : 'bg-slate-900 text-white'
@@ -77,7 +99,6 @@ const DataTable: React.FC<Props> = ({ participants, onSelectParticipant, onClear
                   </div>
                 </div>
 
-                {/* Contact Intel Row */}
                 <div className="mb-4 space-y-2 bg-slate-50/50 p-3 rounded-xl border border-slate-100/50">
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] grayscale opacity-50 group-hover:grayscale-0 transition-all">📧</span>
@@ -93,22 +114,19 @@ const DataTable: React.FC<Props> = ({ participants, onSelectParticipant, onClear
                   </div>
                 </div>
 
-                {/* Social Presence */}
-                <div className="flex items-center gap-1.5 mb-4">
-                  <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[7px] font-black transition-all ${p.linkedin ? 'bg-[#0077B5] text-white shadow-md' : 'bg-slate-50 text-slate-200'}`}>LI</div>
-                  <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[7px] font-black transition-all ${p.instagram ? 'bg-[#E4405F] text-white shadow-md' : 'bg-slate-50 text-slate-200'}`}>IG</div>
-                  <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[7px] font-black transition-all ${p.twitter ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-50 text-slate-200'}`}>X</div>
-                </div>
-
-                {/* Status Footer */}
                 <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-                  {p.status === 'completed' ? (
+                  {p.automationStatus === 'sent' ? (
                      <div className="flex items-center gap-1">
                         <div className="w-1 h-1 bg-emerald-500 rounded-full"></div>
-                        <span className="text-[7px] font-black uppercase text-emerald-600">Veri_Tamam</span>
+                        <span className="text-[7px] font-black uppercase text-emerald-600">Gönderildi</span>
                      </div>
-                  ) : p.status === 'failed' ? (
-                     <span className="text-[7px] font-black uppercase text-red-500">Kritik Hata</span>
+                  ) : p.automationStatus === 'queued' ? (
+                     <div className="flex items-center gap-1">
+                        <div className="w-1 h-1 bg-blue-600 rounded-full animate-ping"></div>
+                        <span className="text-[7px] font-black uppercase text-blue-600">Kuyrukta</span>
+                     </div>
+                  ) : p.status === 'completed' ? (
+                     <span className="text-[7px] font-black uppercase text-slate-400">Veri_Tamam</span>
                   ) : (
                      <span className="text-[7px] font-black uppercase text-blue-400 animate-pulse">Sistem Tarıyor...</span>
                   )}
@@ -119,12 +137,6 @@ const DataTable: React.FC<Props> = ({ participants, onSelectParticipant, onClear
                   )}
                 </div>
               </div>
-              
-              {p.status === 'pending' && (
-                 <div className="absolute bottom-0 left-0 w-full h-0.5 bg-slate-50 overflow-hidden">
-                    <div className="h-full bg-blue-600 animate-[shimmer_2s_infinite] w-full"></div>
-                 </div>
-              )}
             </div>
           ))}
         </div>

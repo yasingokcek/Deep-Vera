@@ -12,18 +12,19 @@ import IdentityModal from './components/IdentityModal';
 import DeepVeraAssistant from './components/DeepVeraAssistant';
 import AdminPanel from './components/AdminPanel';
 import GmailCenter from './components/GmailCenter';
+import AutonomousWorker from './components/AutonomousWorker';
 
 const SECTORS = [
-  { id: 'retail', label: 'Perakende & Mağazacılık', icon: '🛒' },
-  { id: 'fashion', label: 'Moda & Tekstil', icon: '👗' },
-  { id: 'fmcg', label: 'Hızlı Tüketim (FMCG)', icon: '📦' },
-  { id: 'e-commerce', label: 'E-Ticaret & Pazaryeri', icon: '🌐' },
+  { id: 'market', label: 'Market & Perakende', icon: '🛒' },
+  { id: 'hospital', label: 'Hastane & Sağlık Kurumları', icon: '🏥' },
+  { id: 'automotive', label: 'Otomotiv & Yan Sanayi', icon: '🚗' },
+  { id: 'health', label: 'Sağlık & Medikal Teknik', icon: '🧬' },
+  { id: 'restaurant', label: 'Restoran & Gastronomi', icon: '🍽️' },
+  { id: 'cafeteria', label: 'Kafeterya & Catering', icon: '☕' },
+  { id: 'fashion', label: 'Moda & Tekstil Üretimi', icon: '👗' },
   { id: 'tech', label: 'Yazılım & BT', icon: '🤖' },
-  { id: 'finance', label: 'Fintek & Bankacılık', icon: '💎' },
-  { id: 'health', label: 'Sağlık & Medikal', icon: '🧬' },
-  { id: 'energy', label: 'Yenilenebilir Enerji', icon: '🔋' },
-  { id: 'logistics', label: 'Akıllı Lojistik', icon: '🚚' },
-  { id: 'auto', label: 'Otomotiv', icon: '🚗' },
+  { id: 'logistics', label: 'Lojistik & Taşıma', icon: '🚚' },
+  { id: 'energy', label: 'Enerji & Altyapı', icon: '🔋' },
 ];
 
 const LIMIT_OPTIONS = [10, 25, 50, 100, 250];
@@ -62,16 +63,16 @@ const App: React.FC = () => {
 
   const [selectedCountry, setSelectedCountry] = useState<string>("Türkiye");
   const [selectedCity, setSelectedCity] = useState<string>("Tüm Şehirler");
-  const [selectedSector, setSelectedSector] = useState<string>('retail');
+  const [selectedSector, setSelectedSector] = useState<string>('market');
   const [queryContext, setQueryContext] = useState<string>('');
   const [leadLimit, setLeadLimit] = useState<number>(25);
   const [status, setStatus] = useState<AppStatus>(AppStatus.IDLE);
-  const [searchStep, setSearchStep] = useState<number>(0);
   const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isIdentityModalOpen, setIsIdentityModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [isGmailCenterOpen, setIsGmailCenterOpen] = useState(false);
+  const [isWorkerOpen, setIsWorkerOpen] = useState(false);
   
   const stopAnalysisRef = useRef(false);
 
@@ -94,6 +95,10 @@ const App: React.FC = () => {
     sessionStorage.removeItem('deepvera_active_session');
   };
 
+  const updateParticipant = (id: string, updates: Partial<Participant>) => {
+    setParticipants(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+  };
+
   useEffect(() => {
     localStorage.setItem('deepvera_tokens', tokenBalance.toString());
     localStorage.setItem('deepvera_leads_cache', JSON.stringify(participants));
@@ -105,12 +110,10 @@ const App: React.FC = () => {
     setStatus(AppStatus.LOADING);
     
     try {
-      setSearchStep(1);
       const sectorLabel = SECTORS.find(s => s.id === selectedSector)?.label;
       const locationLabel = `${selectedCity}, ${selectedCountry}`;
       const activeQuery = queryContext.trim() || `${sectorLabel} sektöründeki firmalar - ${locationLabel}`;
 
-      setSearchStep(2);
       const rawResults = await extractLeadList(activeQuery, selectedSector, locationLabel, leadLimit, participants.map(p => p.name));
       
       if (!rawResults || rawResults.length === 0) { 
@@ -122,7 +125,7 @@ const App: React.FC = () => {
         id: `p-${Date.now()}-${Math.random()}`,
         name: r.name || 'Şirket',
         website: r.website || '',
-        email: 'Analiz Başlıyor...',
+        email: 'Nöral Analiz...',
         phone: '...',
         industry: sectorLabel,
         location: r.location || locationLabel,
@@ -131,8 +134,6 @@ const App: React.FC = () => {
       }));
 
       setParticipants(prev => [...initialLeads, ...prev]);
-      
-      setSearchStep(3);
       setStatus(AppStatus.FINDING_DETAILS);
 
       for (let i = 0; i < initialLeads.length; i++) {
@@ -148,19 +149,11 @@ const App: React.FC = () => {
           setParticipants(prev => prev.map(p => p.id === current.id ? { ...p, status: 'failed' as const } : p));
         }
       }
-      setSearchStep(4);
     } catch (err) { console.error(err); }
     setStatus(AppStatus.IDLE);
-    setSearchStep(0);
   };
 
-  const steps = [
-    { label: "INITIALIZE", icon: "🚀" },
-    { label: "CRAWLING", icon: "📡" },
-    { label: "NEURAL_SYNC", icon: "🧠" },
-    { label: "SOCIAL_RESOLVE", icon: "📱" },
-    { label: "AI_STRATEGY", icon: "✉️" }
-  ];
+  const queuedCount = participants.filter(p => p.automationStatus === 'queued').length;
 
   return (
     <div className="h-screen bg-[#f8fafc] flex flex-col overflow-hidden font-sans text-slate-900 selection:bg-blue-600/10">
@@ -178,11 +171,14 @@ const App: React.FC = () => {
             onOpenSettings={() => setIsIdentityModalOpen(true)}
             onOpenAdmin={() => setIsAdminPanelOpen(true)}
             onOpenGmail={() => setIsGmailCenterOpen(true)}
+            onOpenWorker={() => setIsWorkerOpen(true)}
             role={user?.role}
             isGmailConnected={user?.isGmailConnected}
+            queuedCount={queuedCount}
           />
           
           <main className="flex-1 flex flex-col overflow-hidden px-6 lg:px-14 py-4 gap-4">
+            {/* Dashboard Controls */}
             <div className="bg-white border border-slate-200/50 rounded-[2.5rem] p-4 shadow-[0_4px_20px_rgb(0,0,0,0.03)] shrink-0">
                <div className="flex flex-col lg:flex-row items-center gap-3">
                   <div className="w-full lg:flex-1 relative group">
@@ -193,19 +189,12 @@ const App: React.FC = () => {
                        type="text"
                        value={queryContext}
                        onChange={(e) => setQueryContext(e.target.value)}
-                       placeholder="Fuar URL'si veya Anahtar Kelime..."
+                       placeholder="Fuar URL'si veya 'İstanbul Marketler' gibi bir komut..."
                        className="w-full h-12 pl-12 pr-6 bg-slate-50/50 border border-slate-100 rounded-xl text-[12px] font-semibold outline-none focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-50/50 transition-all"
                      />
                   </div>
 
                   <div className="flex items-center gap-2 w-full lg:w-auto">
-                    <button 
-                      onClick={() => setIsGmailCenterOpen(true)}
-                      className="h-12 px-6 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all shadow-sm"
-                    >
-                      Gmail_Sync
-                    </button>
-
                     <select 
                       value={selectedSector} 
                       onChange={(e) => setSelectedSector(e.target.value)} 
@@ -236,7 +225,7 @@ const App: React.FC = () => {
                         onChange={(e) => setLeadLimit(Number(e.target.value))} 
                         className="h-12 bg-blue-50/40 border border-blue-100 text-blue-600 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest outline-none min-w-[85px] cursor-pointer hover:bg-blue-100/50 transition-colors"
                       >
-                        {LIMIT_OPTIONS.map(opt => <option key={opt} value={opt}>{opt} LMT</option>)}
+                        {LIMIT_OPTIONS.map(opt => <option key={opt} value={opt}>{opt} ŞİRKET</option>)}
                       </select>
                     </div>
 
@@ -261,15 +250,23 @@ const App: React.FC = () => {
               onSelectParticipant={setSelectedParticipant}
               onExport={() => {}} 
               onClear={() => setParticipants([])}
+              updateParticipant={updateParticipant}
             />
           </main>
 
           <DeepVeraAssistant user={user} />
           <IdentityModal isOpen={isIdentityModalOpen} onClose={() => setIsIdentityModalOpen(false)} user={user} onUpdate={(f) => setUser(u => u ? {...u, ...f} : null)} />
           <PaymentModal isOpen={isPaymentModalOpen} isPro={user?.isPro} onClose={() => setIsPaymentModalOpen(false)} onSuccess={(t) => setTokenBalance(b => b + t)} onUpgrade={() => user && setUser({...user, isPro: true})} />
-          <CompanyDetail participant={selectedParticipant} onClose={() => setSelectedParticipant(null)} userLogo={user?.companyLogo} />
+          <CompanyDetail participant={selectedParticipant} onClose={() => setSelectedParticipant(null)} userLogo={user?.companyLogo} n8nWebhookUrl={user?.n8nWebhookUrl} updateParticipant={updateParticipant} />
           {isAdminPanelOpen && <AdminPanel onClose={() => setIsAdminPanelOpen(false)} currentUser={user} />}
           {isGmailCenterOpen && <GmailCenter user={user} onClose={() => setIsGmailCenterOpen(false)} />}
+          <AutonomousWorker 
+            user={user} 
+            participants={participants} 
+            updateParticipant={updateParticipant} 
+            isOpen={isWorkerOpen} 
+            onClose={() => setIsWorkerOpen(false)} 
+          />
         </>
       )}
     </div>

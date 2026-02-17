@@ -111,7 +111,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
           email: 'admin@deepvera.ai', 
           isPro: true, 
           role: 'admin', 
-          provider: 'demo', 
+          provider: 'local', 
           tokenBalance: 999999 
         }, true);
         return;

@@ -11,8 +11,10 @@ interface HeaderProps {
   onOpenAdmin?: () => void;
   onOpenSettings: () => void;
   onOpenGmail: () => void;
+  onOpenWorker: () => void;
   userLogo?: string;
   isGmailConnected?: boolean;
+  queuedCount?: number;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -23,9 +25,11 @@ const Header: React.FC<HeaderProps> = ({
   onOpenSettings,
   onOpenAdmin,
   onOpenGmail,
+  onOpenWorker,
   userLogo,
   role,
-  isGmailConnected
+  isGmailConnected,
+  queuedCount
 }) => {
   return (
     <header className="h-16 shrink-0 flex items-center px-6 lg:px-14 bg-white/70 backdrop-blur-3xl sticky top-0 z-[60] border-b border-slate-100">
@@ -39,15 +43,28 @@ const Header: React.FC<HeaderProps> = ({
       
       <div className="flex-1"></div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-4">
         {isGmailConnected && (
-           <button 
-             onClick={onOpenGmail}
-             className="flex items-center gap-2 px-4 py-1.5 bg-red-50 text-red-600 rounded-xl text-[9px] font-black uppercase tracking-widest border border-red-100 hover:bg-red-600 hover:text-white transition-all"
-           >
-              <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-ping"></span>
-              GMAIL_KOMUTA
-           </button>
+           <div className="flex items-center gap-2">
+              <button 
+                onClick={onOpenWorker}
+                className={`relative flex items-center gap-2 px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${
+                  queuedCount && queuedCount > 0 
+                  ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-100 animate-pulse' 
+                  : 'bg-slate-50 text-slate-400 border-slate-100 hover:bg-blue-50 hover:text-blue-600'
+                }`}
+              >
+                 <span className={`w-1.5 h-1.5 rounded-full ${queuedCount && queuedCount > 0 ? 'bg-white' : 'bg-slate-300'}`}></span>
+                 OTONOM_AJAN {queuedCount ? `(${queuedCount})` : ''}
+              </button>
+
+              <button 
+                onClick={onOpenGmail}
+                className="flex items-center gap-2 px-4 py-1.5 bg-red-50 text-red-600 rounded-xl text-[9px] font-black uppercase tracking-widest border border-red-100 hover:bg-red-600 hover:text-white transition-all"
+              >
+                 GMAIL_KOMUTA
+              </button>
+           </div>
         )}
 
         {role === 'admin' && (

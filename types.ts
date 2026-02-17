@@ -18,8 +18,18 @@ export interface Participant {
   healthScore?: number;
   location?: string;
   isVerified?: boolean;
-  automationStatus?: 'idle' | 'queued' | 'sent' | 'failed'; 
+  automationStatus: 'idle' | 'queued' | 'sent' | 'failed' | 'sending'; 
   neuralLogs?: string[];
+  newsTrigger?: string;
+  sentAt?: string;
+}
+
+export interface AutomationConfig {
+  minInterval: number; // Dakika
+  maxInterval: number; // Dakika
+  isActive: boolean;
+  dailyLimit: number;
+  sentToday: number;
 }
 
 export interface User {
@@ -40,10 +50,10 @@ export interface User {
   n8nWebhookUrl?: string;
   isGmailConnected?: boolean;
   googleAccessToken?: string;
-  // New strategic fields for AI context
   mainActivity?: string;
   competitorsInfo?: string;
   targetAudience?: string;
+  automationConfig?: AutomationConfig;
 }
 
 export type ViewState = 'landing' | 'login' | 'dashboard' | 'admin' | 'gmail_center';
@@ -56,14 +66,17 @@ export enum AppStatus {
   FAILED = 'FAILED'
 }
 
+// Added missing Sector interface to fix import error in IntelligenceCenter.tsx
 export interface Sector {
   id: string;
   label: string;
   icon: string;
 }
 
+// Added missing SearchMode type to fix import error in IntelligenceCenter.tsx
 export type SearchMode = 'db' | 'live';
 
+// Added missing ActivityPoint interface to fix import error in UserActivityChart.tsx
 export interface ActivityPoint {
   date: string;
   tokensSpent: number;
