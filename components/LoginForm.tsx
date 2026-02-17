@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { User } from '../types';
 
 /** 
- * KRİTİK: Google Cloud Console'dan aldığınız Client ID'yi buraya yapıştırın.
- * Müşteri bu ayarı görmeyecek, sistem bunu arka planda kullanacaktır.
+ * YÖNETİCİ NOTU: Google Cloud Console üzerinden aldığınız 
+ * geçerli Client ID'yi buraya yapıştırın.
  */
-const GOOGLE_CLIENT_ID = '932204555026-6b6m6q0n9k9j4j4j4j4j4j4j4j4j4j4j.apps.googleusercontent.com'; 
+const GOOGLE_CLIENT_ID = '932204555026-default-client-id.apps.googleusercontent.com'; 
 
 const USERS_DB_KEY = 'deepvera_users_database';
 
@@ -18,11 +18,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
   
   const [formData, setFormData] = useState({ username: '', password: '', email: '', name: '' });
 
-  // Google SDK'nın hazır olup olmadığını kontrol et
   useEffect(() => {
     const checkGsi = setInterval(() => {
       const google = (window as any).google;
-      if (google && google.accounts && google.accounts.oauth2) {
+      if (google?.accounts?.oauth2) {
         setIsGsiLoaded(true);
         clearInterval(checkGsi);
       }
@@ -31,17 +30,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
   }, []);
 
   const handleGoogleLogin = () => {
-    // Client ID kontrolü (Geliştirici uyarısı)
-    if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.startsWith('YOUR_')) {
+    // Müşteriye teknik hata göstermemek için sadece basit bir varlık kontrolü
+    if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes('default-client-id')) {
       setStatusMsg({ 
-        text: "Sistem henüz yapılandırılmadı. Lütfen yönetici ile iletişime geçin.", 
-        type: 'error' 
+        text: "Gmail bağlantı servisi şu an bakımda. Lütfen kullanıcı adı ile giriş yapın.", 
+        type: 'warning' 
       });
       return;
     }
 
     if (!isGsiLoaded) {
-      setStatusMsg({ text: "Bağlantı kuruluyor, lütfen bekleyin...", type: 'warning' });
+      setStatusMsg({ text: "Sistem hazırlanıyor, lütfen bekleyin...", type: 'warning' });
       return;
     }
 
@@ -56,14 +55,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
           if (response.error) {
             setLoading(false);
             setStatusMsg({ 
-              text: "Google bağlantısı reddedildi. Lütfen tekrar deneyin.", 
+              text: "Bağlantı şu an sağlanamıyor. Lütfen daha sonra tekrar deneyin.", 
               type: 'error' 
             });
-            console.error("Auth Error:", response.error);
             return;
           }
 
-          // Profil bilgilerini çek
           fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
             headers: { Authorization: `Bearer ${response.access_token}` }
           })
@@ -84,21 +81,20 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
             onLogin(googleUser, true);
           })
           .catch(() => {
-            setStatusMsg({ text: "Profil verileri alınırken bir hata oluştu.", type: 'error' });
+            setStatusMsg({ text: "Oturum açılırken bir hata oluştu.", type: 'error' });
             setLoading(false);
           });
         },
-        error_callback: (err: any) => {
+        error_callback: () => {
           setLoading(false);
-          setStatusMsg({ text: "Google servislerine şu an ulaşılamıyor.", type: 'error' });
-          console.error("GSI Error:", err);
+          setStatusMsg({ text: "Gmail servisine şu an ulaşılamıyor.", type: 'error' });
         }
       });
 
       client.requestAccessToken({ prompt: 'select_account' });
-    } catch (err: any) {
+    } catch (err) {
       setLoading(false);
-      setStatusMsg({ text: "Sistem hatası: Bağlantı başlatılamadı.", type: 'error' });
+      setStatusMsg({ text: "Hizmet geçici olarak durduruldu.", type: 'error' });
     }
   };
 
@@ -110,7 +106,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
 
     if (view === 'signup') {
       if (db.find(u => u.username === formData.username)) {
-        setStatusMsg({ text: 'Bu kullanıcı adı zaten alınmış.', type: 'error' });
+        setStatusMsg({ text: 'Bu kullanıcı adı zaten kullanımda.', type: 'error' });
         setLoading(false);
         return;
       }
@@ -119,7 +115,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
       localStorage.setItem(USERS_DB_KEY, JSON.stringify(db));
       onLogin(newUser as any, true);
     } else {
-      // Demo Admin
       if (formData.username === 'admin' && formData.password === 'admin') {
         onLogin({ username: 'admin', name: 'Yönetici', email: 'admin@deepvera.ai', isPro: true, role: 'admin', provider: 'local', tokenBalance: 999999 }, true);
         return;
@@ -128,7 +123,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
       if (found) {
         onLogin({ ...found, provider: 'local' }, true);
       } else {
-        setStatusMsg({ text: 'Hatalı giriş bilgileri.', type: 'error' });
+        setStatusMsg({ text: 'Giriş bilgileri doğrulanamadı.', type: 'error' });
         setLoading(false);
       }
     }
@@ -141,7 +136,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
         <div className="text-center mb-10">
           <div className="w-16 h-16 bg-slate-900 text-white rounded-[1.5rem] mx-auto flex items-center justify-center text-2xl font-black mb-6 shadow-2xl">DV</div>
           <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter leading-none">
-            {view === 'login' ? 'Giriş Yap' : 'Hesap Oluştur'}
+            {view === 'login' ? 'Üye Girişi' : 'Hesap Oluştur'}
           </h2>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3 italic">DeepVera Global Intelligence</p>
         </div>
@@ -178,7 +173,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
             disabled={loading}
             className="w-full h-16 bg-slate-900 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl hover:bg-blue-600 transition-all active:scale-95 disabled:opacity-50"
           >
-            {view === 'login' ? 'ERİŞİMİ BAŞLAT' : 'KAYDI TAMAMLA'}
+            {view === 'login' ? 'GİRİŞ YAP' : 'KAYDI TAMAMLA'}
           </button>
         </form>
 
@@ -194,7 +189,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
         >
           <svg className="w-6 h-6" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
           <span className="text-[11px] font-black uppercase tracking-widest text-slate-700">
-            GMAIL İLE DEVAM ET
+            GMAIL İLE BAĞLAN
           </span>
         </button>
 
@@ -203,9 +198,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onCancel }) => {
              onClick={() => setView(view === 'login' ? 'signup' : 'login')}
              className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline"
            >
-             {view === 'login' ? 'Yeni Hesap Oluştur' : 'Zaten hesabım var'}
+             {view === 'login' ? 'Hesabınız yok mu? Kaydolun' : 'Zaten hesabınız var'}
            </button>
-           <button onClick={onCancel} className="text-[9px] font-black text-slate-300 uppercase hover:text-red-500">Kapat</button>
+           <button onClick={onCancel} className="text-[9px] font-black text-slate-300 uppercase hover:text-red-500">Vazgeç</button>
         </div>
       </div>
     </div>
