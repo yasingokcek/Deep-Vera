@@ -33,11 +33,21 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <header className="h-16 shrink-0 flex items-center px-6 lg:px-14 bg-white/70 backdrop-blur-3xl sticky top-0 z-[60] border-b border-slate-100">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center font-black text-sm shadow-xl shadow-slate-200/50">DV</div>
-        <div className="flex flex-col leading-none">
-          <span className="font-black text-sm tracking-tight text-slate-900 uppercase">AI <span className="text-blue-600">DeepVera</span></span>
-          <span className="text-[7px] font-black text-slate-300 uppercase tracking-[0.4em] mt-0.5">Global_Intelligence</span>
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center font-black text-sm shadow-xl shadow-slate-200/50">DV</div>
+          <div className="flex flex-col leading-none">
+            <span className="font-black text-sm tracking-tight text-slate-900 uppercase">AI <span className="text-blue-600">DeepVera</span></span>
+            <span className="text-[7px] font-black text-slate-300 uppercase tracking-[0.4em] mt-0.5">Global_Intelligence</span>
+          </div>
+        </div>
+        
+        {/* İletişim Bilgisi */}
+        <div className="hidden lg:flex items-center gap-4 pl-6 border-l border-slate-100">
+          <a href="tel:+902122630900" className="flex items-center gap-2 group transition-all">
+            <div className="w-7 h-7 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center text-xs group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">📞</div>
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-blue-600 transition-colors">+90 212 263 09 00</span>
+          </a>
         </div>
       </div>
       

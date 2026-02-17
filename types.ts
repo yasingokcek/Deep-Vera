@@ -53,6 +53,7 @@ export interface User {
   mainActivity?: string;
   competitorsInfo?: string;
   targetAudience?: string;
+  globalPitch?: string;
   automationConfig?: AutomationConfig;
 }
 
@@ -66,17 +67,14 @@ export enum AppStatus {
   FAILED = 'FAILED'
 }
 
-// Added missing Sector interface to fix import error in IntelligenceCenter.tsx
 export interface Sector {
   id: string;
   label: string;
   icon: string;
 }
 
-// Added missing SearchMode type to fix import error in IntelligenceCenter.tsx
 export type SearchMode = 'db' | 'live';
 
-// Added missing ActivityPoint interface to fix import error in UserActivityChart.tsx
 export interface ActivityPoint {
   date: string;
   tokensSpent: number;

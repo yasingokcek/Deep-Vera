@@ -30,6 +30,37 @@ async function callWithRetry<T>(
   throw new Error("Bağlantı sağlanamadı.");
 }
 
+export const analyzeOwnWebsite = async (url: string): Promise<Partial<User>> => {
+  const ai = getAI();
+  return callWithRetry(async () => {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `"${url}" web sitesini derinlemesine incele. Bu şirket tam olarak ne iş yapıyor? 
+      Aşağıdaki bilgileri yapılandırılmış JSON olarak çıkar:
+      1. companyName: Şirketin tam adı.
+      2. companyDescription: Profesyonel, etkileyici bir hakkımızda özeti.
+      3. mainActivity: Sunduğu temel çözüm ve teknoloji.
+      4. targetAudience: En ideal müşteri profili kimdir?
+      5. globalPitch: Bu şirket için reddedilemez bir satış teklifi (pitch) taslağı oluştur.`,
+      config: {
+        tools: [{ googleSearch: {} }],
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            companyName: { type: Type.STRING },
+            companyDescription: { type: Type.STRING },
+            mainActivity: { type: Type.STRING },
+            targetAudience: { type: Type.STRING },
+            globalPitch: { type: Type.STRING }
+          }
+        }
+      }
+    });
+    return JSON.parse(response.text || '{}');
+  });
+};
+
 export const findCompanyIntel = async (
   name: string, 
   website?: string, 
@@ -39,31 +70,26 @@ export const findCompanyIntel = async (
 ): Promise<Partial<Participant>> => {
   const ai = getAI();
   
-  // Kullanıcının (Gönderen) Şirket Bilgileri - Zekayı bu besler
   const senderContext = `
-GÖNDEREN (BİZİM ŞİRKETİMİZ) PROFİLİ:
+BİZİM PROFİLİMİZ:
 - Şirket: ${sender?.companyName || 'DeepVera AI'}
-- Uzmanlık: ${sender?.mainActivity || sender?.companyDescription || 'B2B Satış Otomasyonu ve AI İstihbarat'}
-- Rakiplerimiz: ${sender?.competitorsInfo || 'Genel Pazar'}
-- Hedef Kitlemiz: ${sender?.targetAudience || 'Karar Vericiler'}
-- Yetkili: ${sender?.authorizedPerson || 'Satış Yöneticisi'}
+- Değer Önerimiz: ${sender?.globalPitch || sender?.mainActivity || 'AI Satış İstihbaratı'}
+- Hedef Kitle: ${sender?.targetAudience || 'B2B Karar Vericiler'}
 `;
 
   return callWithRetry(async () => {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `
-      HEDEF ŞİRKET: "${name}" (${website || 'Web sitesi bilinmiyor'})
-      HEDEF SEKTÖR: ${sector}
-      
+      HEDEF: "${name}" (${website || 'N/A'})
+      SEKTÖR: ${sector}
       ${senderContext}
 
       GÖREV:
-      1. Google Search kullanarak bu şirket hakkında son 6 ayın kritik haberlerini bul (Yatırım, yeni ürün, CEO/yönetici değişikliği, ödül vb.).
-      2. Şirketin kurumsal e-posta formatını ve sosyal medya linklerini (LinkedIn, Instagram) tespit et.
-      3. ICEBREAKER: Bulduğun güncel bir habere atıfta bulunarak (Örn: "Son aldığınız yatırım için tebrikler...") şirketin ilgisini çekecek ilk cümleyi yaz.
-      4. EMAIL DRAFT: Bizim (Gönderen) çözümlerimizi, onların ${sector} sektöründeki spesifik bir sorununa çözüm olacak şekilde eşleştirerek 1:1 satış e-postası yaz. 
-      5. VERIFICATION: Bulduğun e-posta adresi için bir 'healthScore' (0-100) ver.
+      1. Şirket haberlerini bul.
+      2. İletişim verilerini (email, linkedin) tespit et.
+      3. ICEBREAKER: Haberlerine atıfta bulunarak ilgi çekici bir giriş yaz.
+      4. EMAIL DRAFT: Bizim çözümümüzü (${sender?.globalPitch}) onların sektörüne göre özelleştirip 1:1 e-posta yaz.
       `,
       config: { 
         tools: [{ googleSearch: {} }],
@@ -82,7 +108,7 @@ GÖNDEREN (BİZİM ŞİRKETİMİZ) PROFİLİ:
             industry: { type: Type.STRING },
             healthScore: { type: Type.NUMBER },
             isVerified: { type: Type.BOOLEAN },
-            newsTrigger: { type: Type.STRING, description: "Atıfta bulunulan güncel haberin özeti" }
+            newsTrigger: { type: Type.STRING }
           }
         }
       },
@@ -106,8 +132,8 @@ export const extractLeadList = async (
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: isUrl 
-        ? `"${queryContext}" fuar/etkinlik sitesindeki ${sector} sektörü katılımcı listesini çıkar. Toplam ${limit} adet şirket.`
-        : `"${location}" bölgesindeki "${sector}" sektöründen ${limit} adet aktif şirketi listele. Şu isimleri atla: ${excludeNames.slice(-10).join(", ")}`,
+        ? `"${queryContext}" sitesindeki katılımcı listesini çıkar. Limit: ${limit}.`
+        : `"${location}" bölgesindeki "${sector}" sektöründen ${limit} şirket listele. Atla: ${excludeNames.slice(-10).join(", ")}`,
       config: {
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",

@@ -15,12 +15,12 @@ import GmailCenter from './components/GmailCenter';
 import AutonomousWorker from './components/AutonomousWorker';
 
 const SECTORS = [
-  { id: 'market', label: 'Market & Perakende', icon: '🛒' },
+  { id: 'insurance', label: 'Sigorta Şirketleri', icon: '🛡️' },
+  { id: 'horeca', label: 'Horeka Tedarikçileri', icon: '🍽️' },
   { id: 'hospital', label: 'Hastane & Sağlık Kurumları', icon: '🏥' },
   { id: 'automotive', label: 'Otomotiv & Yan Sanayi', icon: '🚗' },
   { id: 'health', label: 'Sağlık & Medikal Teknik', icon: '🧬' },
-  { id: 'restaurant', label: 'Restoran & Gastronomi', icon: '🍽️' },
-  { id: 'cafeteria', label: 'Kafeterya & Catering', icon: '☕' },
+  { id: 'restaurant', label: 'Restoran & Gastronomi', icon: '🍴' },
   { id: 'fashion', label: 'Moda & Tekstil Üretimi', icon: '👗' },
   { id: 'tech', label: 'Yazılım & BT', icon: '🤖' },
   { id: 'logistics', label: 'Lojistik & Taşıma', icon: '🚚' },
@@ -63,16 +63,20 @@ const App: React.FC = () => {
 
   const [selectedCountry, setSelectedCountry] = useState<string>("Türkiye");
   const [selectedCity, setSelectedCity] = useState<string>("Tüm Şehirler");
-  const [selectedSector, setSelectedSector] = useState<string>('market');
+  const [selectedSector, setSelectedSector] = useState<string>('insurance');
   const [queryContext, setQueryContext] = useState<string>('');
   const [leadLimit, setLeadLimit] = useState<number>(25);
   const [status, setStatus] = useState<AppStatus>(AppStatus.IDLE);
   const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
+  
+  // Modals & Floating Components
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isIdentityModalOpen, setIsIdentityModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [isGmailCenterOpen, setIsGmailCenterOpen] = useState(false);
   const [isWorkerOpen, setIsWorkerOpen] = useState(false);
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [isConnectMenuOpen, setIsConnectMenuOpen] = useState(false);
   
   const stopAnalysisRef = useRef(false);
 
@@ -107,6 +111,7 @@ const App: React.FC = () => {
   const startAnalysis = async () => {
     if (tokenBalance < 1) { setIsPaymentModalOpen(true); return; }
     stopAnalysisRef.current = false;
+    setStatus(AppStatus.IDLE); // Reset status first
     setStatus(AppStatus.LOADING);
     
     try {
@@ -178,7 +183,6 @@ const App: React.FC = () => {
           />
           
           <main className="flex-1 flex flex-col overflow-hidden px-6 lg:px-14 py-4 gap-4">
-            {/* Dashboard Controls */}
             <div className="bg-white border border-slate-200/50 rounded-[2.5rem] p-4 shadow-[0_4px_20px_rgb(0,0,0,0.03)] shrink-0">
                <div className="flex flex-col lg:flex-row items-center gap-3">
                   <div className="w-full lg:flex-1 relative group">
@@ -195,78 +199,72 @@ const App: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2 w-full lg:w-auto">
-                    <select 
-                      value={selectedSector} 
-                      onChange={(e) => setSelectedSector(e.target.value)} 
-                      className="h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest outline-none min-w-[150px] cursor-pointer hover:bg-white transition-all"
-                    >
+                    <select value={selectedSector} onChange={(e) => setSelectedSector(e.target.value)} className="h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest outline-none min-w-[150px] cursor-pointer">
                       {SECTORS.map(s => <option key={s.id} value={s.id}>{s.icon} {s.label}</option>)}
                     </select>
-
                     <div className="flex gap-2">
-                      <select 
-                        value={selectedCountry} 
-                        onChange={(e) => { setSelectedCountry(e.target.value); setSelectedCity(LOCATION_DATA[e.target.value][0]); }} 
-                        className="h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest outline-none min-w-[110px] cursor-pointer"
-                      >
+                      <select value={selectedCountry} onChange={(e) => setSelectedCountry(e.target.value)} className="h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest outline-none min-w-[110px] cursor-pointer">
                         {Object.keys(LOCATION_DATA).map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
-
-                      <select 
-                        value={selectedCity} 
-                        onChange={(e) => setSelectedCity(e.target.value)} 
-                        className="h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest outline-none min-w-[120px] cursor-pointer"
-                      >
+                      <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)} className="h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest outline-none min-w-[120px] cursor-pointer">
                         {LOCATION_DATA[selectedCountry].map(city => <option key={city} value={city}>{city}</option>)}
                       </select>
-                      
-                      <select 
-                        value={leadLimit} 
-                        onChange={(e) => setLeadLimit(Number(e.target.value))} 
-                        className="h-12 bg-blue-50/40 border border-blue-100 text-blue-600 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest outline-none min-w-[85px] cursor-pointer hover:bg-blue-100/50 transition-colors"
-                      >
+                      <select value={leadLimit} onChange={(e) => setLeadLimit(Number(e.target.value))} className="h-12 bg-blue-50 border border-blue-100 text-blue-600 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest outline-none min-w-[85px] cursor-pointer">
                         {LIMIT_OPTIONS.map(opt => <option key={opt} value={opt}>{opt} ŞİRKET</option>)}
                       </select>
                     </div>
-
-                    <button 
-                      onClick={status === AppStatus.IDLE ? startAnalysis : () => { stopAnalysisRef.current = true; setStatus(AppStatus.IDLE); }} 
-                      className={`h-12 px-10 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-all active:scale-95 ${
-                        status === AppStatus.IDLE 
-                        ? 'bg-blue-600 text-white shadow-blue-100 hover:bg-slate-900' 
-                        : 'bg-red-500 text-white shadow-red-50 animate-pulse'
-                      }`}
-                    >
+                    <button onClick={status === AppStatus.IDLE ? startAnalysis : () => { stopAnalysisRef.current = true; setStatus(AppStatus.IDLE); }} className={`h-12 px-10 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-all active:scale-95 ${status === AppStatus.IDLE ? 'bg-blue-600 text-white shadow-blue-100 hover:bg-slate-900' : 'bg-red-500 text-white animate-pulse'}`}>
                       {status === AppStatus.IDLE ? "KEŞFET" : "DURDUR"}
                     </button>
                   </div>
                </div>
             </div>
 
-            <DataTable 
-              participants={participants} 
-              status={status} 
-              tokenBalance={tokenBalance} 
-              onSelectParticipant={setSelectedParticipant}
-              onExport={() => {}} 
-              onClear={() => setParticipants([])}
-              updateParticipant={updateParticipant}
-            />
+            <DataTable participants={participants} status={status} tokenBalance={tokenBalance} onSelectParticipant={setSelectedParticipant} onExport={() => {}} onClear={() => setParticipants([])} updateParticipant={updateParticipant} />
           </main>
 
-          <DeepVeraAssistant user={user} />
+          {/* Unified Action Menu for Dashboard (Connect Menu) */}
+          <div className="fixed bottom-8 right-8 z-[300] flex flex-col items-end gap-5">
+             {/* Sub-items (Opens upward) */}
+             <div className={`flex flex-col items-end gap-5 transition-all duration-500 transform origin-bottom ${isConnectMenuOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-0 opacity-0 translate-y-10 pointer-events-none'}`}>
+                {/* WhatsApp Action */}
+                <a 
+                  href="https://wa.me/902122630900" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-5 group"
+                >
+                   <span className="bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest px-5 py-2.5 rounded-2xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all translate-x-3 group-hover:translate-x-0">WhatsApp Hattı</span>
+                   <div className="w-16 h-16 bg-emerald-500 text-white rounded-[1.8rem] flex items-center justify-center text-3xl shadow-[0_20px_40px_-10px_rgba(16,185,129,0.4)] hover:scale-110 transition-all">💬</div>
+                </a>
+                
+                {/* AI Assistant Action */}
+                <button 
+                  onClick={() => { setIsAssistantOpen(true); setIsConnectMenuOpen(false); }}
+                  className="flex items-center gap-5 group"
+                >
+                   <span className="bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest px-5 py-2.5 rounded-2xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all translate-x-3 group-hover:translate-x-0">AI İstihbarat Rehberi</span>
+                   <div className="w-16 h-16 bg-blue-600 text-white rounded-[1.8rem] flex items-center justify-center text-3xl shadow-[0_20px_40px_-10px_rgba(37,99,235,0.4)] hover:scale-110 transition-all">🧠</div>
+                </button>
+             </div>
+
+             {/* Main Multi-Action Toggle */}
+             <button 
+               onClick={() => setIsConnectMenuOpen(!isConnectMenuOpen)}
+               className={`w-20 h-20 rounded-[2.5rem] flex items-center justify-center text-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] transition-all active:scale-90 group relative overflow-hidden ${isConnectMenuOpen ? 'bg-slate-900 rotate-45 shadow-none' : 'bg-blue-600'}`}
+             >
+                <div className="absolute -inset-1 bg-white/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-all animate-pulse"></div>
+                <span className="relative z-10 text-white font-black tracking-tighter uppercase">{isConnectMenuOpen ? '×' : 'DV'}</span>
+             </button>
+          </div>
+
+          <DeepVeraAssistant user={user} isOpen={isAssistantOpen} onClose={() => setIsAssistantOpen(false)} />
           <IdentityModal isOpen={isIdentityModalOpen} onClose={() => setIsIdentityModalOpen(false)} user={user} onUpdate={(f) => setUser(u => u ? {...u, ...f} : null)} />
           <PaymentModal isOpen={isPaymentModalOpen} isPro={user?.isPro} onClose={() => setIsPaymentModalOpen(false)} onSuccess={(t) => setTokenBalance(b => b + t)} onUpgrade={() => user && setUser({...user, isPro: true})} />
           <CompanyDetail participant={selectedParticipant} onClose={() => setSelectedParticipant(null)} userLogo={user?.companyLogo} n8nWebhookUrl={user?.n8nWebhookUrl} updateParticipant={updateParticipant} />
           {isAdminPanelOpen && <AdminPanel onClose={() => setIsAdminPanelOpen(false)} currentUser={user} />}
           {isGmailCenterOpen && <GmailCenter user={user} onClose={() => setIsGmailCenterOpen(false)} />}
-          <AutonomousWorker 
-            user={user} 
-            participants={participants} 
-            updateParticipant={updateParticipant} 
-            isOpen={isWorkerOpen} 
-            onClose={() => setIsWorkerOpen(false)} 
-          />
+          <AutonomousWorker user={user} participants={participants} updateParticipant={updateParticipant} isOpen={isWorkerOpen} onClose={() => setIsWorkerOpen(false)} />
         </>
       )}
     </div>

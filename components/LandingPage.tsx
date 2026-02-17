@@ -14,311 +14,175 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      const offset = 80; // Header height
-      const bodyRect = document.body.getBoundingClientRect().top;
-      const elementRect = element.getBoundingClientRect().top;
-      const elementPosition = elementRect - bodyRect;
-      const offsetPosition = elementPosition - offset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
-    }
-  };
-
   const sectors = [
-    { title: "Turizm & Otelcilik", desc: "Fuar katılımcısı otelleri ve acenteleri saniyeler içinde analiz edin.", icon: "🏨", color: "bg-blue-50" },
-    { title: "İmalat & Sanayi", desc: "Bölgesel fabrika verilerini ve satın alma sorumlularını bulun.", icon: "🏭", color: "bg-emerald-50" },
-    { title: "Teknoloji & Yazılım", desc: "Yeni girişimleri, teknopark sakinlerini ve potansiyel partnerleri listeleyin.", icon: "💻", color: "bg-purple-50" },
-    { title: "Lojistik & Taşıma", desc: "Tedarik zinciri ağındaki kilit şirketleri ve iletişim hatlarını çıkarın.", icon: "🚚", color: "bg-amber-50" },
-    { title: "Sağlık & Medikal", desc: "Hastane grupları, klinikler ve medikal cihaz üreticilerine ulaşın.", icon: "🏥", color: "bg-red-50" },
-    { title: "E-Ticaret & Perakende", desc: "Pazaryeri satıcılarını ve fiziksel perakende devlerini takip edin.", icon: "🛒", color: "bg-sky-50" }
+    { title: "Sigorta Şirketleri", desc: "Acente ağınızı genişletin ve kurumsal portföy yönetimini otonom hale getirin.", metric: "+%35 Verimlilik", icon: "🛡️" },
+    { title: "Horeka Tedarikçileri", desc: "Otel, restoran ve kafelere özel tekliflerinizi otonom ajanlarla ulaştırın.", metric: "4X Daha Hızlı", icon: "🍽️" },
+    { title: "Sağlık Turizmi", desc: "Uluslararası hasta potansiyelini ve partner ajansları otonom analiz edin.", metric: "+%30 Yeni Lead", icon: "🏥" },
+    { title: "Lojistik & Nakliye", desc: "Küresel tedarik zinciri ağındaki karar vericilerle stratejik bağ kurun.", metric: "-%65 Manuel Efor", icon: "🚚" },
+    { title: "Kurumsal Danışmanlık", desc: "Büyük ölçekli şirketlerin güncel ihtiyaçlarını yapay zeka ile tespit edin.", metric: "+%40 Dönüşüm", icon: "👔" },
+    { title: "E-Ticaret & Perakende", desc: "Tedarikçi ağınızı genişletin ve toptan satış kanallarınızı yönetin.", metric: "+%40 Satış Hacmi", icon: "🛒" },
+    { title: "Üretim & Sanayi", desc: "Endüstriyel parça ve hammadde ihtiyaçları için global üreticilere ulaşın.", metric: "-%50 Tedarik Süresi", icon: "🏭" },
+    { title: "Enerji & Altyapı", desc: "Yeşil enerji projeleri için küresel yatırımcıları tarayın.", metric: "%100 İsabet", icon: "🔋" }
+  ];
+
+  const navLinks = [
+    { label: "Neden Biz?", href: "#why-us" },
+    { label: "Biz Kimiz?", href: "#who-we-are" },
+    { label: "Nasıl Çalışır?", href: "#how-it-works" },
+    { label: "İletişim", href: "#footer" }
   ];
 
   return (
     <div className="bg-white text-slate-900 min-h-screen font-sans selection:bg-blue-100 selection:text-blue-700 overflow-x-hidden relative">
-      {/* Background Pattern */}
-      <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03]" 
-           style={{ backgroundImage: `radial-gradient(#2563eb 1px, transparent 1px)`, backgroundSize: '40px 40px' }}></div>
-
+      
       {/* Navigation */}
       <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${isScrolled ? 'bg-white/80 backdrop-blur-3xl h-20 border-b border-slate-100 shadow-sm' : 'h-24 bg-transparent'}`}>
-        <div className="container mx-auto px-6 lg:px-12 h-full flex justify-between items-center">
-          <div className="flex items-center gap-3">
-             <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-lg shadow-lg">
-                <span className="relative z-10">DV</span>
+        <div className="container mx-auto px-6 lg:px-14 h-full flex justify-between items-center">
+          <div className="flex items-center gap-10">
+             <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-lg shadow-lg">DV</div>
+                <div className="flex flex-col leading-none">
+                   <span className="text-xl font-black tracking-tighter uppercase text-slate-900">AI <span className="text-blue-600">DeepVera</span></span>
+                   <span className="text-[7px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">Otonom Satış Ajanları</span>
+                </div>
              </div>
-             <div className="flex flex-col leading-none text-left">
-                <span className="text-xl font-black tracking-tighter uppercase text-slate-900">AI <span className="text-blue-600">DeepVera</span></span>
-                <span className="text-[7px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">Küresel İstihbarat</span>
+             
+             {/* Desktop Nav Links */}
+             <div className="hidden lg:flex items-center gap-8 border-l border-slate-100 pl-10">
+                {navLinks.map(link => (
+                  <a key={link.label} href={link.href} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors">
+                    {link.label}
+                  </a>
+                ))}
              </div>
           </div>
-          <div className="flex items-center gap-10">
-             <div className="hidden lg:flex gap-8 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                <button onClick={() => scrollToSection('how-it-works')} className="hover:text-blue-600 transition-colors">Süreç</button>
-                <button onClick={() => scrollToSection('features')} className="hover:text-blue-600 transition-colors">Yetenekler</button>
-                <button onClick={() => scrollToSection('sectors')} className="hover:text-blue-600 transition-colors">Sektörler</button>
-                <button onClick={() => scrollToSection('faq')} className="hover:text-blue-600 transition-colors">SSS</button>
-             </div>
-             <button onClick={onGetStarted} className="px-8 py-3 bg-blue-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all shadow-xl">Giriş Yap</button>
+
+          <div className="flex items-center gap-8">
+            <button onClick={onGetStarted} className="px-8 py-3 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-xl">Giriş Yap</button>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <header className="relative pt-48 pb-32 overflow-hidden">
-        <div className="container mx-auto px-6 lg:px-12 relative z-10">
-          <div className="flex flex-col items-center text-center max-w-5xl mx-auto">
-            <div className="inline-flex items-center gap-3 px-6 py-2 bg-blue-50 border border-blue-100 rounded-full mb-10">
-               <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-               <span className="text-[9px] font-black text-blue-600 uppercase tracking-[0.3em]">Yeni Nesil B2B Satış Otomasyonu</span>
+      <section className="relative min-h-screen flex items-center pt-24 overflow-hidden">
+        <div className="absolute top-0 left-0 w-1/2 h-full bg-slate-50/50 blur-[120px] -z-10 opacity-30"></div>
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-blue-600/5 blur-[150px] -z-10 animate-pulse"></div>
+
+        <div className="container mx-auto px-6 lg:px-14 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+          <div className="space-y-10 reveal-left">
+            <div className="inline-flex items-center gap-3 px-6 py-2 bg-blue-50 border border-blue-100 rounded-full">
+               <span className="w-2 h-2 bg-blue-500 rounded-full animate-ping"></span>
+               <span className="text-[9px] font-black text-blue-600 uppercase tracking-[0.3em]">Otonom Satış Ajanları Aktif</span>
             </div>
             
-            <h1 className="text-6xl lg:text-[110px] font-black uppercase leading-[0.9] tracking-tighter mb-10 text-slate-900">
-              Manuel Arama <br/>
-              <span className="text-blue-600 italic">Devrine Son.</span>
+            <h1 className="text-5xl lg:text-[100px] font-black uppercase leading-[0.85] tracking-tighter text-slate-900">
+              Siz Strateji Kurun, <br/>
+              <span className="text-blue-600 italic">Satışı DeepVera Başlatsın.</span>
             </h1>
             
-            <p className="text-xl lg:text-2xl text-slate-500 font-medium leading-relaxed max-w-3xl mx-auto mb-16">
-              DeepVera, tek bir URL veya sektör komutuyla hedefleri belirler. Otonom ajanlarımız web'i tarar, karar vericileri bulur ve reddedilemez teklifler hazırlar.
+            <p className="text-xl lg:text-2xl text-slate-500 font-medium leading-relaxed max-w-xl">
+              Hedeflerinizi belirleyin, otonom ajanlarımız dünyayı tarasın. Manuel aramalarla vakit kaybetmeyin; sadece masanıza düşen reddedilemez teklifleri yönetin.
             </p>
             
-            <div className="flex flex-col sm:flex-row justify-center gap-6 w-full max-w-md mx-auto">
-               <button onClick={onGetStarted} className="flex-1 px-12 py-6 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.3em] hover:bg-slate-900 transition-all shadow-2xl shadow-blue-200">
+            <div className="flex items-center gap-6">
+               <button onClick={onGetStarted} className="px-14 py-7 bg-blue-600 text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] hover:bg-slate-900 transition-all shadow-2xl shadow-blue-200 active:scale-95">
                   Sistemi Başlat
-               </button>
-               <button onClick={() => scrollToSection('how-it-works')} className="flex-1 px-12 py-6 bg-white border border-slate-200 text-slate-900 rounded-2xl font-black text-xs uppercase tracking-[0.3em] hover:bg-slate-50 transition-all">
-                  Nasıl Çalışır?
                </button>
             </div>
           </div>
-        </div>
-      </header>
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-32 bg-slate-50/50 relative">
-        <div className="container mx-auto px-6 lg:px-12">
-          <div className="text-center mb-24">
-             <span className="text-[11px] font-black text-blue-600 uppercase tracking-[0.4em] mb-4 block">İstihbarat Akışı</span>
-             <h2 className="text-4xl lg:text-6xl font-black uppercase tracking-tighter">DeepVera Nasıl <span className="text-blue-600">Düşünür?</span></h2>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 relative">
-             <div className="hidden lg:block absolute top-1/2 left-0 w-full h-px bg-slate-200 -z-0"></div>
-             
-             {[
-               { step: "01", title: "Hedef Belirleme", desc: "Bir fuar URL'si yapıştırın veya 'Sidney'deki Oteller' gibi bir komut verin.", icon: "🎯" },
-               { step: "02", title: "Derin Tarama", desc: "AI ajanlarımız anında web sitelerini, sosyal ağları ve dijital ayak izlerini tarar.", icon: "🔍" },
-               { step: "03", title: "İstihbarat", desc: "Karar verici isimleri, doğrulanmış e-postalar ve rakip analizleri listelenir.", icon: "🧠" },
-               { step: "04", title: "Özel Teklif", desc: "AI, hizmetlerinizi hedefin hedefleriyle ilişkilendiren 1:1 bir teklif hazırlar.", icon: "✉️" }
-             ].map((item, i) => (
-               <div key={i} className="relative z-10 p-10 bg-white border border-slate-100 rounded-[3rem] shadow-xl hover:border-blue-500 transition-all group">
-                  <div className="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform">{item.icon}</div>
-                  <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2 block">{item.step} / ADIM</span>
-                  <h3 className="text-xl font-black uppercase tracking-tight mb-4">{item.title}</h3>
-                  <p className="text-slate-500 text-sm leading-relaxed font-medium">{item.desc}</p>
-               </div>
-             ))}
+          <div className="relative group perspective">
+             <div className="relative w-full aspect-square max-w-2xl mx-auto flex items-center justify-center">
+                <div className="absolute inset-0 bg-blue-600/10 rounded-full blur-[100px] group-hover:bg-blue-600/20 transition-all duration-1000"></div>
+                <div className="w-80 h-80 bg-gradient-to-tr from-blue-600 to-indigo-400 rounded-[3rem] rotate-12 group-hover:rotate-45 transition-all duration-[2s] shadow-2xl relative flex items-center justify-center border-4 border-white/20">
+                   <div className="absolute inset-0 bg-white/10 backdrop-blur-sm rounded-[3rem]"></div>
+                   <div className="relative z-10 text-white text-9xl font-black">AI</div>
+                </div>
+             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-32 bg-white">
-        <div className="container mx-auto px-6 lg:px-12">
-           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-              <div className="space-y-10">
-                 <div className="space-y-4">
-                    <span className="text-[11px] font-black text-blue-600 uppercase tracking-[0.4em]">Derin Yetenekler</span>
-                    <h2 className="text-4xl lg:text-6xl font-black uppercase tracking-tighter leading-none">Sadece Bir Liste Değil, <br/><span className="text-blue-600">Bir Satış Silahı.</span></h2>
-                 </div>
-                 
-                 <div className="space-y-8">
-                    <div className="flex gap-6 group cursor-default">
-                       <div className="w-12 h-12 bg-slate-900 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-xl group-hover:bg-blue-600 transition-colors">🔥</div>
-                       <div>
-                          <h4 className="text-lg font-black uppercase tracking-tight mb-2 group-hover:text-blue-600 transition-colors">Buzkıran Motoru</h4>
-                          <p className="text-slate-500 text-sm font-medium">Gerçek zamanlı hedef verilerine dayalı kişiselleştirilmiş giriş cümleleri oluşturur.</p>
-                       </div>
-                    </div>
-                    <div className="flex gap-6 group cursor-default">
-                       <div className="w-12 h-12 bg-slate-900 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-xl group-hover:bg-blue-600 transition-colors">⚔️</div>
-                       <div>
-                          <h4 className="text-lg font-black uppercase tracking-tight mb-2 group-hover:text-blue-600 transition-colors">Rakip İstihbaratı</h4>
-                          <p className="text-slate-500 text-sm font-medium">Rakipleri analiz ederek satış stratejinizi otomatik olarak optimize eder.</p>
-                       </div>
-                    </div>
-                 </div>
-              </div>
-
-              {/* Enhanced Visual Section */}
-              <div className="relative group">
-                 <div className="absolute -inset-20 bg-blue-600/10 blur-[120px] rounded-full group-hover:bg-blue-600/20 transition-all duration-1000"></div>
-                 
-                 <div className="relative bg-[#0a0c10] rounded-[3rem] p-6 lg:p-10 shadow-2xl border border-white/10 overflow-hidden min-h-[700px] flex flex-col text-left text-white">
-                    {/* Neural Header HUD */}
-                    <div className="relative z-20 flex justify-between items-center mb-8">
-                       <div className="flex items-center gap-4">
-                          <div className="flex gap-1">
-                             {[1,2,3].map(i => <div key={i} className="w-1 h-3 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: `${i*0.2}s`}}></div>)}
-                          </div>
-                          <span className="text-[8px] font-black text-blue-400 uppercase tracking-widest">Nöral Sistem Aktif</span>
-                       </div>
-                       <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[6px] font-black uppercase tracking-widest text-white/40">
-                          Mode: Deep Context Alpha
-                       </div>
-                    </div>
-
-                    {/* The Visual Representation of "How it Works" */}
-                    <div className="flex-1 relative">
-                       {/* Background Connection Lines */}
-                       <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 400 600">
-                          <path d="M 50 100 Q 200 150 350 100" stroke="#2563eb" fill="none" strokeWidth="0.5" className="animate-pulse" />
-                          <path d="M 50 300 Q 200 250 350 300" stroke="#2563eb" fill="none" strokeWidth="0.5" />
-                          <path d="M 50 500 Q 200 450 350 500" stroke="#2563eb" fill="none" strokeWidth="0.5" className="animate-pulse" />
-                       </svg>
-
-                       {/* Stages Breakdown */}
-                       <div className="space-y-12 relative z-10">
-                          {/* Stage 1: Extraction */}
-                          <div className="flex items-center gap-6 group/item">
-                             <div className="w-12 h-12 rounded-xl bg-blue-600/20 border border-blue-600/40 flex items-center justify-center text-xl shadow-[0_0_20px_rgba(37,99,235,0.2)]">🌍</div>
-                             <div className="flex-1 space-y-2">
-                                <div className="flex justify-between items-center">
-                                   <span className="text-[9px] font-black uppercase tracking-widest text-blue-400">Veri Ayıklama</span>
-                                   <span className="text-[7px] font-bold text-emerald-400">Tamamlandı</span>
-                                </div>
-                                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                                   <div className="h-full bg-blue-500 w-full animate-[shimmer_2s_infinite]"></div>
-                                </div>
-                                <p className="text-[9px] text-white/50 font-medium italic">"Sydney Tech Fuarı katılımcı listesi (342 şirket) tarandı."</p>
-                             </div>
-                          </div>
-
-                          {/* Stage 2: Intelligence Matching */}
-                          <div className="flex items-center gap-6 translate-x-4">
-                             <div className="w-12 h-12 rounded-xl bg-purple-600/20 border border-purple-600/40 flex items-center justify-center text-xl shadow-[0_0_20px_rgba(147,51,234,0.2)]">🔍</div>
-                             <div className="flex-1 space-y-3">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-purple-400">Kimlik Çözümleme</span>
-                                <div className="flex gap-2">
-                                   <div className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-[7px] font-bold text-white/60 flex items-center gap-2">
-                                      <span className="w-1 h-1 bg-blue-500 rounded-full"></span> LinkedIn Match
-                                   </div>
-                                   <div className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-[7px] font-bold text-white/60 flex items-center gap-2">
-                                      <span className="w-1 h-1 bg-emerald-500 rounded-full"></span> Email Verified
-                                   </div>
-                                </div>
-                             </div>
-                          </div>
-
-                          {/* Stage 3: Cold Email Synthesis */}
-                          <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-3xl p-6 shadow-2xl mt-8">
-                             <div className="flex items-center gap-4 mb-4">
-                                <div className="w-10 h-10 bg-emerald-500/20 text-emerald-500 rounded-lg flex items-center justify-center text-lg">✉️</div>
-                                <div>
-                                   <h5 className="text-[10px] font-black uppercase tracking-widest text-white">Nöral Taslak Oluşturma</h5>
-                                   <p className="text-[7px] text-white/40">Kişiselleştirme Skoru: %98.4</p>
-                                </div>
-                             </div>
-                             <div className="space-y-3 p-4 bg-black/40 border border-white/5 rounded-2xl">
-                                <div className="h-2 w-3/4 bg-white/10 rounded-full"></div>
-                                <div className="h-2 w-1/2 bg-white/10 rounded-full"></div>
-                                <p className="text-[10px] text-white/70 italic leading-relaxed">
-                                   "Sydney fuarındaki standınızda bahsettiğiniz **yeni nesil sürdürülebilirlik modülü**, bizim **ABC çözümümüzle** tam entegre çalışarak maliyetlerinizi düşürebilir..."
-                                </p>
-                             </div>
-                          </div>
-                       </div>
-                    </div>
-
-                    {/* Telemetry Footer */}
-                    <div className="mt-8 pt-6 border-t border-white/5 flex justify-between items-center text-[7px] font-black text-white/30 uppercase tracking-[0.3em]">
-                       <div className="flex gap-8">
-                          <div className="flex flex-col gap-1">
-                             <span className="text-white/10">Tokens Processed</span>
-                             <span className="text-white/60">1.2M+ / Day</span>
-                          </div>
-                          <div className="flex flex-col gap-1">
-                             <span className="text-white/10">Entity Precision</span>
-                             <span className="text-blue-500">Sub-Milimetrical</span>
-                          </div>
-                       </div>
-                       <div className="flex items-center gap-2">
-                          <div className="h-1 w-12 bg-white/5 rounded-full overflow-hidden">
-                             <div className="h-full bg-blue-600 w-2/3 animate-pulse"></div>
-                          </div>
-                          <span>Syncing...</span>
-                       </div>
-                    </div>
-                 </div>
-              </div>
-           </div>
-        </div>
-      </section>
-
-      {/* Sectors Section */}
-      <section id="sectors" className="py-32 bg-slate-50 relative overflow-hidden">
-        <div className="container mx-auto px-6 lg:px-12">
-           <div className="text-center mb-24 max-w-3xl mx-auto">
-              <span className="text-[11px] font-black text-blue-600 uppercase tracking-[0.4em] mb-4 block">Uygulama Alanları</span>
-              <h2 className="text-4xl lg:text-6xl font-black uppercase tracking-tighter mb-6">Her Sektör İçin <br/><span className="text-blue-600">Keskin Çözümler.</span></h2>
-              <p className="text-slate-500 font-medium">DeepVera'nın yapay zekası, sektörünüze özel dil kalıplarını ve pazar dinamiklerini anlayarak en doğru veriyi önünüze getirir.</p>
-           </div>
-
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {sectors.map((sector, i) => (
-                <div key={i} className="group p-8 bg-white rounded-[2.5rem] border border-slate-100 hover:border-blue-500 hover:shadow-2xl transition-all duration-500">
-                   <div className={`w-16 h-16 ${sector.color} rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform`}>
-                      {sector.icon}
+      {/* Sektörel Çözümler */}
+      <section id="sectors" className="py-40 bg-white border-t border-slate-50">
+        <div className="container mx-auto px-6 lg:px-14 text-center">
+           <span className="text-[11px] font-black text-blue-600 uppercase tracking-[0.4em] mb-4 block">Nerede Kullanılır?</span>
+           <h2 className="text-4xl lg:text-7xl font-black uppercase tracking-tighter leading-none mb-24">Global <span className="text-blue-600 italic">Büyüme Matrisi</span></h2>
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {sectors.map((s, i) => (
+                <div key={i} className="group relative p-10 bg-slate-50 rounded-[3rem] border border-transparent hover:border-blue-500/20 transition-all duration-500 text-left">
+                   <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-4xl mb-8 shadow-sm group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                      {s.icon}
                    </div>
-                   <h3 className="text-xl font-black uppercase tracking-tight mb-4 group-hover:text-blue-600 transition-colors">{sector.title}</h3>
-                   <p className="text-slate-500 text-sm font-medium leading-relaxed">{sector.desc}</p>
+                   <h3 className="text-xl font-black uppercase tracking-tight mb-3 text-slate-900 group-hover:text-blue-600 transition-colors">{s.title}</h3>
+                   <p className="text-slate-500 text-sm font-bold leading-relaxed mb-8 opacity-80">{s.desc}</p>
+                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-100">
+                      {s.metric}
+                   </div>
                 </div>
               ))}
            </div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-40 relative overflow-hidden">
-         <div className="absolute inset-0 bg-blue-600 z-0"></div>
-         <div className="container mx-auto px-6 lg:px-12 relative z-10 text-center">
-            <h2 className="text-5xl lg:text-[100px] font-black text-white uppercase tracking-tighter leading-[0.9] mb-16">
-               Veriyi Güce, <br/> Gücü Satışa Dönüştürün.
-            </h2>
-            <button onClick={onGetStarted} className="px-20 py-8 bg-white text-blue-600 rounded-[2.5rem] font-black text-xl uppercase tracking-[0.2em] shadow-2xl hover:bg-slate-900 hover:text-white transition-all scale-100 hover:scale-105">
-               Şimdi Ücretsiz Deneyin
-            </button>
-            <p className="text-white/60 font-bold uppercase tracking-widest mt-12">Kredi kartı gerekmez • 50 DV Token Dahil</p>
-         </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-20 border-t border-slate-100 bg-white">
-         <div className="container mx-auto px-6 lg:px-12">
-            <div className="flex flex-col lg:flex-row justify-between items-center gap-10 mb-12">
-               <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center font-black">DV</div>
-                  <span className="text-lg font-black uppercase tracking-tighter">AI DeepVera</span>
+      {/* Footer / Kurumsal İletişim */}
+      <footer id="footer" className="bg-slate-900 text-white py-24 relative overflow-hidden">
+         <div className="container mx-auto px-6 lg:px-14 relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+               <div>
+                  <div className="flex items-center gap-3 mb-8">
+                     <div className="w-12 h-12 bg-white text-slate-900 rounded-2xl flex items-center justify-center font-black text-xl">DV</div>
+                     <span className="text-2xl font-black tracking-tighter uppercase">AI <span className="text-blue-500">DeepVera</span></span>
+                  </div>
+                  <h3 className="text-4xl font-black uppercase tracking-tighter leading-tight mb-6">Satışın Geleceğini <br/> <span className="text-blue-500">Birlikte İnşa Edelim.</span></h3>
+                  <p className="text-white/40 text-lg font-medium max-w-md">DeepVera otonom ajanları, şirketinizin büyüme hedeflerini saniyeler içinde analiz eder ve harekete geçer.</p>
                </div>
-               <div className="flex gap-10 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                  <button onClick={() => scrollToSection('how-it-works')} className="hover:text-blue-600">Süreç</button>
-                  <button onClick={() => scrollToSection('features')} className="hover:text-blue-600">Yetenekler</button>
-                  <button onClick={() => scrollToSection('sectors')} className="hover:text-blue-600">Sektörler</button>
+
+               <div className="space-y-6">
+                  <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-8">
+                     <div className="flex flex-col gap-2">
+                        <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em]">Kurumsal Destek Hattı</span>
+                        <a href="tel:+902122630900" className="text-3xl font-black hover:text-blue-500 transition-colors tracking-tighter">+90 212 263 09 00</a>
+                     </div>
+                     <div className="flex flex-col gap-2">
+                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">WhatsApp İletişim</span>
+                        <a href="https://wa.me/902122630900" target="_blank" rel="noopener noreferrer" className="text-3xl font-black hover:text-emerald-500 transition-colors tracking-tighter">Hızlı Mesaj Gönder</a>
+                     </div>
+                  </div>
+                  <div className="flex justify-between items-center px-6">
+                     <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">DeepVera Intelligence Systems © 2024</span>
+                     <div className="flex gap-6">
+                        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] hover:text-white transition-colors cursor-pointer">KVKK</span>
+                        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] hover:text-white transition-colors cursor-pointer">Gizlilik</span>
+                     </div>
+                  </div>
                </div>
             </div>
          </div>
+         {/* Background Decoration */}
+         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
       </footer>
 
+      {/* Persistent WhatsApp FAB for Landing Page */}
+      <a 
+        href="https://wa.me/902122630900" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="fixed bottom-10 right-10 z-[110] w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center text-3xl shadow-2xl shadow-emerald-200 hover:scale-110 hover:bg-emerald-600 transition-all active:scale-95 group"
+      >
+        <div className="absolute -inset-1 bg-emerald-400 rounded-full blur opacity-20 group-hover:opacity-40 animate-pulse"></div>
+        <span className="relative z-10">💬</span>
+        <div className="absolute right-20 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap shadow-xl">
+           WhatsApp İletişim Hattı
+        </div>
+      </a>
+
       <style>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
+        @keyframes revealLeft {
+          from { opacity: 0; transform: translateX(-50px); }
+          to { opacity: 1; transform: translateX(0); }
         }
+        .reveal-left { animation: revealLeft 1s ease-out forwards; }
         html { scroll-behavior: smooth; }
       `}</style>
     </div>
