@@ -10,16 +10,31 @@ interface Props {
 }
 
 const DeepVeraAssistant: React.FC<Props> = ({ user, isOpen, onClose }) => {
-  const [messages, setMessages] = useState<{ role: 'ai' | 'user'; text: string }[]>([
-    { role: 'ai', text: "Sistemler çevrimiçi. Ben DeepVera'nın Nöral Rehberiyim. Bugün istihbarat operasyonlarınıza nasıl yardımcı olabilirim?" }
-  ]);
+  const [messages, setMessages] = useState<{ role: 'ai' | 'user'; text: string }[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // İlk mesajı asenkron olarak değil, bileşen açıldığında (eğer boşsa) set edelim
   useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages, isOpen]);
+    if (isOpen && messages.length === 0) {
+      setMessages([
+        { 
+          role: 'ai', 
+          text: `Merhaba ${user?.name || 'Ziyaretçi'}, ben DeepVera'nın Nöral Mimarı. Küresel pazarda 250 milyondan fazla şirket verisini sizin için saniyeler içinde tarayabilir, otonom satış ajanlarımızı Gmail veya LinkedIn üzerinden harekete geçirebilirim. Size nasıl müşteri bulabileceğimiz konusunda stratejik bir rehberlik ister misiniz?` 
+        }
+      ]);
+    }
+  }, [isOpen, user]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }, [messages, isLoading]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -35,54 +50,105 @@ const DeepVeraAssistant: React.FC<Props> = ({ user, isOpen, onClose }) => {
         model: 'gemini-3-flash-preview',
         contents: userText,
         config: {
-          systemInstruction: `Sen DeepVera AI Asistanısın. Profesyonel, mühendislik odaklı ve yardımsever bir ton kullan. Yanıtları TÜRKÇE ver.`,
-          temperature: 0.7,
+          systemInstruction: `Sen DeepVera Intelligence platformunun Sanal Mimarı ve Baş Stratejistisin (DV-Architect).
+          
+          DEEPVERA NEDİR VE NASIL ÇALIŞIR?:
+          1. VERİ MADENCİLİĞİ: 250 milyondan fazla gerçek zamanlı şirket verisine erişiriz. Fuar listeleri, LinkedIn profilleri ve global ticaret sicilleri ana kaynağımızdır.
+          2. OTONOM AJANLAR: Sizin adınıza Gmail veya LinkedIn üzerinden iletişime geçeriz. Sadece bir e-posta taslağı değil, otonom bir iletişim süreci yönetiriz.
+          3. AKILLI ANALİZ: Hedef firmanın acı noktalarını, rakiplerini ve prestij notlarını Gemini AI ile analiz ederiz.
+          
+          DİYALOG KURALLARI:
+          - TON: Son derece profesyonel, teknoloji odaklı, çözüm üretici ve kurumsal.
+          - HEDEF: Kullanıcının DeepVera'yı "Sizin adınıza sahada sıcak satış fırsatı kovalayan bir yapay zeka gücü" olarak görmesini sağlamak.
+          - YASAKLAR: "Ben bir dil modeliyim" gibi ifadeler kullanma. Kendini her zaman DV-Architect olarak tanıt.
+          - DİL: Her zaman Türkçe konuş.
+          - KULLANICI BİLGİSİ: Kullanıcı adı: ${user?.name || 'Bilinmiyor'}, Şirketi: ${user?.companyName || 'Belirtilmedi'}.`,
+          temperature: 0.8,
+          topP: 0.95,
         }
       });
-      setMessages(prev => [...prev, { role: 'ai', text: response.text || "İşleniyor..." }]);
+
+      const aiText = response.text || "Şu an nöral ağlarda bir senkronizasyon sorunu yaşıyorum. Lütfen tekrar sorar mısınız?";
+      setMessages(prev => [...prev, { role: 'ai', text: aiText }]);
     } catch (e) {
-      setMessages(prev => [...prev, { role: 'ai', text: "Bağlantı hatası." }]);
+      console.error("AI Error:", e);
+      setMessages(prev => [...prev, { role: 'ai', text: "Bağlantı sinyali zayıf. Nöral motor yanıt vermedi." }]);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-32 right-6 z-[250] w-[380px] h-[550px] bg-white border border-slate-100 rounded-[3rem] shadow-2xl flex flex-col overflow-hidden animate-fade-in transition-all">
-       <div className="p-8 bg-slate-900 text-white flex justify-between items-center shrink-0">
-          <div className="flex items-center gap-4">
-             <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-xs font-black shadow-lg animate-pulse">DV</div>
+    <div className="fixed bottom-6 right-6 z-[1001] w-[90vw] sm:w-[420px] h-[600px] bg-white/95 backdrop-blur-3xl border border-slate-200 rounded-[3.5rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.3)] flex flex-col overflow-hidden animate-fade-in ring-1 ring-black/5">
+       
+       {/* Assistant Header */}
+       <div className="p-8 bg-slate-950 text-white flex justify-between items-center shrink-0 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-blue-600/20 blur-[60px] animate-pulse"></div>
+          <div className="flex items-center gap-5 relative z-10">
+             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-emerald-500 flex items-center justify-center text-white font-black shadow-lg shadow-blue-500/20">
+                DV
+             </div>
              <div>
-                <h4 className="text-[10px] font-black uppercase tracking-widest leading-none">AI Rehber</h4>
-                <p className="text-[8px] font-bold text-blue-400 uppercase tracking-tighter mt-1">ONLINE</p>
+                <h4 className="text-[11px] font-black uppercase tracking-[0.2em] leading-none">DV-Architect</h4>
+                <div className="flex items-center gap-2 mt-2">
+                   <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></div>
+                   <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest italic">Core Engine Linked</span>
+                </div>
              </div>
           </div>
-          <button onClick={onClose} className="text-3xl text-white/50 hover:text-white transition-colors">&times;</button>
+          <button 
+            onClick={onClose} 
+            className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 text-white/50 hover:bg-white/20 hover:text-white transition-all text-2xl relative z-10"
+          >
+            &times;
+          </button>
        </div>
        
-       <div ref={scrollRef} className="flex-1 overflow-y-auto p-8 space-y-4 custom-scrollbar bg-slate-50/20">
+       {/* Chat Area */}
+       <div ref={scrollRef} className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar bg-white/50">
           {messages.map((m, i) => (
-            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-               <div className={`max-w-[85%] p-5 rounded-[1.8rem] text-[11px] font-medium leading-relaxed shadow-sm ${
-                 m.role === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none'
+            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
+               <div className={`max-w-[85%] p-6 rounded-[2rem] text-[12px] font-medium leading-[1.6] shadow-sm ${
+                 m.role === 'user' 
+                 ? 'bg-slate-900 text-white rounded-tr-none' 
+                 : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none'
                }`}>
                   {m.text}
                </div>
             </div>
           ))}
-          {isLoading && <div className="text-[9px] font-black text-blue-500 uppercase animate-pulse px-2">Nöral Ağlar Yanıtlıyor...</div>}
+          {isLoading && (
+            <div className="flex items-center gap-4 px-4 py-2">
+               <div className="flex gap-1.5">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+               </div>
+               <span className="text-[9px] font-black text-blue-600 uppercase tracking-[0.3em] italic">Ajanlar Analiz Ediyor...</span>
+            </div>
+          )}
        </div>
 
-       <div className="p-6 border-t border-slate-50 bg-white flex gap-3 shrink-0">
+       {/* Input Area */}
+       <div className="p-6 border-t border-slate-100 bg-white flex gap-4 shrink-0">
           <input 
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-            placeholder="Rehberden yardım iste..."
-            className="flex-1 h-12 px-5 bg-slate-50 rounded-2xl text-[11px] font-bold outline-none focus:bg-white border border-slate-100 transition-all"
+            placeholder="Müşteri bulma sürecini sor..."
+            className="flex-1 h-14 px-6 bg-slate-50 rounded-2xl text-[12px] font-bold outline-none focus:bg-white border border-slate-100 focus:border-blue-500 transition-all shadow-inner"
           />
-          <button onClick={sendMessage} className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center text-lg shadow-xl hover:bg-blue-600 transition-all">➔</button>
+          <button 
+            onClick={sendMessage} 
+            disabled={!input.trim() || isLoading}
+            className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl shadow-xl transition-all ${
+              !input.trim() || isLoading ? 'bg-slate-100 text-slate-300' : 'bg-slate-950 text-white hover:bg-blue-600 active:scale-90'
+            }`}
+          >
+            ➔
+          </button>
        </div>
     </div>
   );

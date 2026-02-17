@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 
 interface LandingPageProps {
   onGetStarted: () => void;
+  onToggleAssistant: () => void;
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onToggleAssistant }) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -15,109 +16,131 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
   }, []);
 
   const sectors = [
-    { title: "Sigorta Şirketleri", desc: "Acente ağınızı genişletin ve kurumsal portföy yönetimini otonom hale getirin.", metric: "+%35 Verimlilik", icon: "🛡️" },
-    { title: "Horeka Tedarikçileri", desc: "Otel, restoran ve kafelere özel tekliflerinizi otonom ajanlarla ulaştırın.", metric: "4X Daha Hızlı", icon: "🍽️" },
-    { title: "Sağlık Turizmi", desc: "Uluslararası hasta potansiyelini ve partner ajansları otonom analiz edin.", metric: "+%30 Yeni Lead", icon: "🏥" },
-    { title: "Lojistik & Nakliye", desc: "Küresel tedarik zinciri ağındaki karar vericilerle stratejik bağ kurun.", metric: "-%65 Manuel Efor", icon: "🚚" },
-    { title: "Kurumsal Danışmanlık", desc: "Büyük ölçekli şirketlerin güncel ihtiyaçlarını yapay zeka ile tespit edin.", metric: "+%40 Dönüşüm", icon: "👔" },
-    { title: "E-Ticaret & Perakende", desc: "Tedarikçi ağınızı genişletin ve toptan satış kanallarınızı yönetin.", metric: "+%40 Satış Hacmi", icon: "🛒" },
-    { title: "Üretim & Sanayi", desc: "Endüstriyel parça ve hammadde ihtiyaçları için global üreticilere ulaşın.", metric: "-%50 Tedarik Süresi", icon: "🏭" },
-    { title: "Enerji & Altyapı", desc: "Yeşil enerji projeleri için küresel yatırımcıları tarayın.", metric: "%100 İsabet", icon: "🔋" }
+    { title: "Sigorta & Finans", desc: "Acente ağınızı sizin yerinize tarar, risk analizini yapar ve otonom iş birliği mesajlarını ileterek sizi direkt masaya oturtur.", metric: "+%35 Verim", icon: "🛡️" },
+    { title: "Global Lojistik", desc: "Tedarik zinciri liderlerini bulur, operasyonel ihtiyaçlarını anlar ve sizin adınıza profesyonel teklif sunar.", metric: "-%65 Efor", icon: "🚚" },
+    { title: "Sağlık Turizmi", desc: "Global partner adaylarını tespit eder, kliniğinizi tanıtır ve ilk randevuyu otonom olarak sizin yerinize kurgular.", metric: "+%30 Lead", icon: "🏥" },
+    { title: "Horeka Tedarik", desc: "Otel ve restoran satın alma müdürlerini bulur, tedarik gücünüzü sizin adınıza anlatarak satış sürecini başlatır.", metric: "4X Erişim", icon: "🍽️" },
+    { title: "Sanayi & Üretim", desc: "Parça ve hammadde ihtiyacı olan fabrikaları bulur, üretim kapasitenizi otonom olarak onlara sunar.", metric: "-%50 Süre", icon: "🏭" },
+    { title: "Kurumsal Danışmanlık", desc: "Şirketlerin büyüme sancılarını teşhis eder ve çözüm önerilerinizi otonom bir dille karar vericilere ulaştırır.", metric: "+%40 Dönüşüm", icon: "👔" }
   ];
 
-  const navLinks = [
-    { label: "Neden Biz?", href: "#features" },
-    { label: "Biz Kimiz?", href: "#who-we-are" },
-    { label: "Nasıl Çalışır?", href: "#how-it-works" },
-    { label: "İletişim", href: "#footer" }
+  const workflowStages = [
+    { 
+      id: "01", 
+      title: "Otonom Veri Hasadı", 
+      desc: "DeepVera, hedeflerinizle uyumlu global ağları (LinkedIn, Haberler, Bilançolar) saniyeler içinde tarayarak dijital istihbarat toplar.",
+      tech: "Neural Crawling Core"
+    },
+    { 
+      id: "02", 
+      title: "Bilişsel Eşleşme", 
+      desc: "Toplanan verileri şirketinizin 'değer önerisi' ile çapraz analiz eder. Sadece sizinle çalışmaya en hazır olan kontakları belirler.",
+      tech: "Cognitive Scoring Engine"
+    },
+    { 
+      id: "03", 
+      title: "Sizin Adınıza İletişim", 
+      desc: "Ajanlarımız, sizin dijital temsilciniz olarak kontaklara ulaşır ve iletişime geçer. Siz sadece randevu onayı gelen e-postalara dönersiniz.",
+      tech: "Autonomous Outreach Proxy"
+    }
   ];
 
   return (
-    <div className="bg-white text-slate-900 min-h-screen font-sans selection:bg-blue-100 selection:text-blue-700 overflow-x-hidden relative">
+    <div className="bg-white text-slate-900 min-h-screen font-sans selection:bg-blue-100 selection:text-blue-700 overflow-x-hidden relative max-w-full">
       
       {/* Navigation */}
-      <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${isScrolled ? 'bg-white/80 backdrop-blur-3xl h-20 border-b border-slate-100 shadow-sm' : 'h-24 bg-transparent'}`}>
+      <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${isScrolled ? 'bg-white/90 backdrop-blur-3xl h-20 border-b border-slate-100 shadow-sm' : 'h-24 bg-transparent'}`}>
         <div className="container mx-auto px-6 lg:px-14 h-full flex justify-between items-center">
           <div className="flex items-center gap-10">
              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-lg shadow-lg">DV</div>
+                <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-lg shadow-lg relative overflow-hidden">
+                   <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/40 to-transparent"></div>
+                   DV
+                </div>
                 <div className="flex flex-col leading-none">
                    <span className="text-xl font-black tracking-tighter uppercase text-slate-900">AI <span className="text-blue-600">DeepVera</span></span>
-                   <span className="text-[7px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">Otonom Satış Ajanları</span>
+                   <span className="text-[7px] font-black text-slate-400 uppercase tracking-[0.4em] mt-1">Autonomous Business Engine</span>
                 </div>
              </div>
              
-             {/* Desktop Nav Links */}
-             <div className="hidden lg:flex items-center gap-8 border-l border-slate-100 pl-10">
-                {navLinks.map(link => (
-                  <a key={link.label} href={link.href} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-all">
-                    {link.label}
-                  </a>
-                ))}
+             <div className="hidden lg:flex items-center gap-8 ml-10 border-l border-slate-100 pl-10">
+                <a href="#matrix" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-all">Sektörel Matris</a>
+                <a href="#core-engine" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-all">Otonom Akış</a>
+                <a href="#support" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-all">İletişim</a>
              </div>
           </div>
 
           <div className="flex items-center gap-8">
-            <button onClick={onGetStarted} className="px-8 py-3 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-xl">Giriş Yap</button>
+            <button onClick={onGetStarted} className="px-10 py-3.5 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-600 transition-all shadow-2xl active:scale-95">SİSTEME GİRİŞ</button>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section id="who-we-are" className="relative min-h-screen flex items-center pt-24 overflow-hidden">
-        <div className="absolute top-0 left-0 w-1/2 h-full bg-slate-50/50 blur-[120px] -z-10 opacity-30"></div>
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-blue-600/5 blur-[150px] -z-10 animate-pulse"></div>
+      <section className="relative min-h-screen flex items-center pt-24 overflow-hidden max-w-full">
+        <div className="absolute top-0 right-0 w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-blue-600/5 blur-[150px] -z-10 animate-pulse rounded-full"></div>
 
-        <div className="container mx-auto px-6 lg:px-14 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-          <div className="space-y-10 reveal-left">
-            <div className="inline-flex items-center gap-3 px-6 py-2 bg-blue-50 border border-blue-100 rounded-full">
-               <span className="w-2 h-2 bg-blue-500 rounded-full animate-ping"></span>
+        <div className="container mx-auto px-6 lg:px-14 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+          <div className="space-y-12 reveal-left">
+            <div className="inline-flex items-center gap-4 px-6 py-2 bg-blue-50 border border-blue-100 rounded-full">
+               <span className="w-2 h-2 bg-blue-600 rounded-full animate-ping"></span>
                <span className="text-[9px] font-black text-blue-600 uppercase tracking-[0.3em]">Otonom Satış Ajanları Aktif</span>
             </div>
             
-            <h1 className="text-5xl lg:text-[100px] font-black uppercase leading-[0.85] tracking-tighter text-slate-900">
+            <h1 className="text-4xl md:text-5xl lg:text-[80px] font-black uppercase leading-[0.85] tracking-tighter text-slate-900">
               Siz Strateji Kurun, <br/>
-              <span className="text-blue-600 italic">Satışı DeepVera Başlatsın.</span>
+              <span className="text-blue-600 italic">Müşteriyi DeepVera <br/>Bulup Getirsin.</span>
             </h1>
             
             <p className="text-xl lg:text-2xl text-slate-500 font-medium leading-relaxed max-w-xl">
-              Hedeflerinizi belirleyin, otonom ajanlarımız dünyayı tarasın. Manuel aramalarla vakit kaybetmeyin; sadece masanıza düşen teklifleri yönetin.
+              DeepVera otonom ajanları pazarınızı tarar, doğru karar vericiyi bulur ve sizin yerinize ilk teması kurarak satışın fitilini ateşler.
             </p>
             
-            <div className="flex items-center gap-6">
-               <button onClick={onGetStarted} className="px-14 py-7 bg-blue-600 text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] hover:bg-slate-900 transition-all shadow-2xl shadow-blue-200 active:scale-95">
-                  Sistemi Başlat
+            <div className="flex flex-wrap items-center gap-8 pt-4">
+               <button onClick={onGetStarted} className="px-12 md:px-16 py-6 md:py-8 bg-blue-600 text-white rounded-[2.5rem] font-black text-xs uppercase tracking-[0.4em] hover:bg-slate-900 transition-all shadow-2xl shadow-blue-200 active:scale-95">
+                  Operasyonu Başlat
                </button>
+               <button onClick={onToggleAssistant} className="px-8 py-6 md:py-8 border-2 border-slate-100 rounded-[2.5rem] text-[10px] font-black uppercase tracking-widest hover:border-blue-600 transition-all">Sistemi AI'ya Sor</button>
             </div>
           </div>
 
-          <div className="relative group perspective">
-             <div className="relative w-full aspect-square max-w-2xl mx-auto flex items-center justify-center">
-                <div className="absolute inset-0 bg-blue-600/10 rounded-full blur-[100px] group-hover:bg-blue-600/20 transition-all duration-1000"></div>
-                <div className="w-80 h-80 bg-gradient-to-tr from-blue-600 to-indigo-400 rounded-[3rem] rotate-12 group-hover:rotate-45 transition-all duration-[2s] shadow-2xl relative flex items-center justify-center border-4 border-white/20">
-                   <div className="absolute inset-0 bg-white/10 backdrop-blur-sm rounded-[3rem]"></div>
-                   <div className="relative z-10 text-white text-9xl font-black">AI</div>
+          <div className="relative hidden lg:block">
+             <div className="w-full aspect-square border-2 border-dashed border-slate-100 rounded-full flex items-center justify-center p-20 animate-[spin_60s_linear_infinite]">
+                <div className="w-full h-full border border-blue-100 rounded-full relative">
+                   <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-2xl shadow-xl">🔍</div>
+                   <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-16 h-16 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-2xl shadow-xl">📧</div>
+                   <div className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-2xl shadow-xl">🧠</div>
+                   <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-2xl shadow-xl">🤝</div>
+                </div>
+             </div>
+             <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-64 h-64 bg-slate-900 text-white rounded-[3rem] shadow-2xl flex flex-col items-center justify-center p-8 text-center animate-bounce">
+                   <div className="text-4xl mb-4">🤖</div>
+                   <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">The Machine</span>
+                   <p className="text-[11px] font-bold mt-2 leading-relaxed italic">Sizin yerinize iletişime geçiyoruz.</p>
                 </div>
              </div>
           </div>
         </div>
       </section>
 
-      {/* Sektörel Çözümler */}
-      <section id="features" className="py-40 bg-white border-t border-slate-50">
+      {/* Sektörel Büyüme Matrisi */}
+      <section id="matrix" className="py-40 bg-white relative max-w-full">
         <div className="container mx-auto px-6 lg:px-14 text-center">
-           <span className="text-[11px] font-black text-blue-600 uppercase tracking-[0.4em] mb-4 block">Nerede Kullanılır?</span>
-           <h2 className="text-4xl lg:text-7xl font-black uppercase tracking-tighter leading-none mb-24">Global <span className="text-blue-600 italic">Büyüme Matrisi</span></h2>
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+           <span className="text-[11px] font-black text-blue-600 uppercase tracking-[0.5em] mb-4 block">Sectoral Penetration Matrix</span>
+           <h2 className="text-4xl lg:text-7xl font-black uppercase tracking-tighter leading-none mb-24">Global <span className="text-blue-600 italic">Müşteri Havuzu</span></h2>
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {sectors.map((s, i) => (
-                <div key={i} className="group relative p-10 bg-slate-50 rounded-[3rem] border border-transparent hover:border-blue-500/20 transition-all duration-500 text-left">
-                   <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-4xl mb-8 shadow-sm group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                <div key={i} className="group p-12 bg-slate-50/50 rounded-[4rem] border border-transparent hover:border-blue-500/20 hover:bg-white hover:shadow-2xl transition-all duration-500 text-left">
+                   <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-4xl mb-10 shadow-sm border border-slate-100 group-hover:scale-110 transition-all duration-500">
                       {s.icon}
                    </div>
-                   <h3 className="text-xl font-black uppercase tracking-tight mb-3 text-slate-900 group-hover:text-blue-600 transition-colors">{s.title}</h3>
-                   <p className="text-slate-500 text-sm font-bold leading-relaxed mb-8 opacity-80">{s.desc}</p>
-                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-100">
-                      {s.metric}
+                   <h3 className="text-2xl font-black uppercase tracking-tight mb-4 text-slate-900 group-hover:text-blue-600 transition-colors">{s.title}</h3>
+                   <p className="text-slate-500 text-sm font-bold leading-relaxed mb-10 opacity-70 group-hover:opacity-100 transition-opacity">{s.desc}</p>
+                   <div className="flex items-center justify-between border-t border-slate-100 pt-8">
+                      <div className="px-5 py-2.5 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest group-hover:bg-blue-600 transition-colors">
+                        {s.metric} Verimlilik
+                      </div>
                    </div>
                 </div>
               ))}
@@ -125,75 +148,82 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="py-40 bg-slate-50 relative">
-        <div className="container mx-auto px-6 lg:px-14 text-center">
-           <h2 className="text-4xl lg:text-7xl font-black uppercase tracking-tighter mb-20">Nasıl <span className="text-blue-600">Çalışır?</span></h2>
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-              <div className="bg-white p-12 rounded-[3rem] shadow-xl border border-slate-100">
-                 <div className="text-4xl mb-6">🎯</div>
-                 <h4 className="text-xl font-black uppercase mb-4">Hedef Belirleyin</h4>
-                 <p className="text-sm font-medium text-slate-500">İster bir fuar sitesi verin, ister sektör ismi girin. Ajanlarımız dünyayı saniyeler içinde tarasın.</p>
-              </div>
-              <div className="bg-white p-12 rounded-[3rem] shadow-xl border border-slate-100">
-                 <div className="text-4xl mb-6">🧠</div>
-                 <h4 className="text-xl font-black uppercase mb-4">Analiz & Kişiselleştirme</h4>
-                 <p className="text-sm font-medium text-slate-500">Her şirket için haberleri okur, LinkedIn profillerini analiz eder ve kişiye özel teklif hazırlar.</p>
-              </div>
-              <div className="bg-white p-12 rounded-[3rem] shadow-xl border border-slate-100">
-                 <div className="text-4xl mb-6">📤</div>
-                 <h4 className="text-xl font-black uppercase mb-4">Otonom Gönderim</h4>
-                 <p className="text-sm font-medium text-slate-500">Onayladığınız adaylara e-postalarınız belirlediğiniz aralıklarla otonom olarak iletilir.</p>
-              </div>
+      {/* The Core Engine Machine */}
+      <section id="core-engine" className="py-40 bg-slate-950 relative overflow-hidden max-w-full">
+        <div className="container mx-auto px-6 lg:px-14 relative z-10">
+           <div className="text-center mb-32">
+              <span className="text-[11px] font-black text-blue-500 uppercase tracking-[0.5em] mb-4 block">The Autonomous Workflow</span>
+              <h2 className="text-4xl lg:text-7xl font-black uppercase tracking-tighter text-white">Size Nasıl <span className="text-blue-500 italic">Müşteri Buluyoruz?</span></h2>
+           </div>
+
+           <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+              {workflowStages.map((stage, i) => (
+                <div key={i} className="relative group">
+                   <div className="absolute -top-10 left-10 text-[100px] font-black text-white/[0.03] group-hover:text-blue-600/10 transition-colors select-none">{stage.id}</div>
+                   <div className="bg-white/5 border border-white/10 p-12 rounded-[3.5rem] relative z-10 h-full flex flex-col hover:border-blue-600/50 transition-all duration-500">
+                      <h4 className="text-2xl font-black text-white uppercase tracking-tighter mb-6">{stage.title}</h4>
+                      <p className="text-slate-400 text-sm font-medium leading-relaxed mb-12 flex-1">{stage.desc}</p>
+                      <div className="flex items-center gap-3 border-t border-white/5 pt-8">
+                         <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_#3b82f6]"></div>
+                         <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">{stage.tech}</span>
+                      </div>
+                   </div>
+                   {i < 2 && (
+                     <div className="hidden lg:block absolute top-1/2 -right-10 translate-y-1/2 text-4xl text-blue-600/20 animate-pulse">➔</div>
+                   )}
+                </div>
+              ))}
            </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer id="footer" className="bg-slate-900 text-white py-24 relative overflow-hidden">
-         <div className="container mx-auto px-6 lg:px-14 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-               <div>
-                  <div className="flex items-center gap-3 mb-8">
-                     <div className="w-12 h-12 bg-white text-slate-900 rounded-2xl flex items-center justify-center font-black text-xl">DV</div>
-                     <span className="text-2xl font-black tracking-tighter uppercase">AI <span className="text-blue-500">DeepVera</span></span>
-                  </div>
-                  <h3 className="text-4xl font-black uppercase tracking-tighter leading-tight mb-6">Satışın Geleceğini <br/> <span className="text-blue-500">Birlikte İnşa Edelim.</span></h3>
-                  <p className="text-white/40 text-lg font-medium max-w-md">DeepVera otonom ajanları, şirketinizin büyüme hedeflerini saniyeler içinde analiz eder.</p>
+      {/* Footer / Contact */}
+      <footer id="support" className="bg-slate-950 text-white py-32 relative overflow-hidden max-w-full">
+         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 blur-[100px] -z-10"></div>
+         <div className="container mx-auto px-6 lg:px-14">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+               <div className="space-y-10">
+                  <h3 className="text-4xl lg:text-6xl font-black uppercase tracking-tighter leading-none">Global Satışı <br/> <span className="text-blue-600">DeepVera ile Ölçekleyin.</span></h3>
+                  <p className="text-slate-400 text-lg font-medium max-w-md">DeepVera Architect (DV-A), şirketiniz için 7/24 çalışan bir satış mühendisi olarak yeni pazarların kapısını sizin yerinize aralar.</p>
                </div>
 
-               <div className="space-y-6">
-                  <div className="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-8">
-                     <div className="flex flex-col gap-2">
-                        <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em]">Kurumsal Destek Hattı</span>
-                        <a href="tel:+902122630900" className="text-3xl font-black hover:text-blue-500 transition-colors tracking-tighter">+90 212 263 09 00</a>
+               <div className="bg-white/5 border border-white/10 p-8 md:p-16 rounded-[4rem] shadow-2xl relative overflow-hidden">
+                  <h4 className="text-3xl font-black uppercase tracking-tighter mb-10 leading-tight italic">Stratejik Mühendislik & İletişim</h4>
+                  <div className="space-y-6">
+                     <div className="flex flex-col gap-1">
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Resmi Mühendislik Hattı</span>
+                        <a href="tel:+902122630900" className="text-2xl font-black hover:text-blue-500 transition-colors tracking-tighter">+90 212 263 09 00</a>
                      </div>
-                     <div className="flex flex-col gap-2">
-                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">WhatsApp İletişim</span>
-                        <a href="https://wa.me/902122630900" target="_blank" rel="noopener noreferrer" className="text-3xl font-black hover:text-emerald-500 transition-colors tracking-tighter">Hızlı Mesaj Gönder</a>
+                     <div className="flex flex-col gap-1 pt-6 border-t border-white/5">
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Yazışma Sinyali</span>
+                        <a href="mailto:ai@deepvera.com.tr" className="text-xl font-black hover:text-blue-500 transition-colors tracking-tight">ai@deepvera.com.tr</a>
                      </div>
                   </div>
+               </div>
+            </div>
+            
+            <div className="mt-32 pt-16 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+               <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em]">© 2024 DEEPVERA AI INTELLIGENCE / ALL SYSTEMS OPERATIONAL</span>
+               <div className="flex gap-8">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-not-allowed">Privacy_Policy</span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-not-allowed">Terms_of_Service</span>
                </div>
             </div>
          </div>
       </footer>
 
-      {/* Persistent WhatsApp Button */}
-      <a 
-        href="https://wa.me/902122630900" 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="fixed bottom-10 right-10 z-[110] w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center text-3xl shadow-2xl hover:scale-110 hover:bg-emerald-600 transition-all active:scale-95 group"
+      {/* AI Assistant Floating Button */}
+      <button 
+        onClick={onToggleAssistant} 
+        className="fixed bottom-10 right-10 z-[110] w-16 h-16 md:w-20 md:h-20 bg-emerald-500 text-white rounded-full flex flex-col items-center justify-center shadow-[0_20px_50px_rgba(16,185,129,0.3)] hover:scale-110 hover:bg-slate-900 transition-all active:scale-95 group"
       >
-        <div className="absolute -inset-1 bg-emerald-400 rounded-full blur opacity-20 group-hover:opacity-40 animate-pulse"></div>
-        <span className="relative z-10">💬</span>
-      </a>
+        <div className="absolute -inset-2 bg-emerald-400 rounded-full blur opacity-20 group-hover:opacity-40 animate-pulse"></div>
+        <div className="text-2xl md:text-3xl relative z-10">🤖</div>
+        <span className="text-[7px] font-black uppercase tracking-tighter mt-1 relative z-10">DV_ASSISTANT</span>
+      </button>
 
       <style>{`
-        @keyframes revealLeft {
-          from { opacity: 0; transform: translateX(-50px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
+        @keyframes revealLeft { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
         .reveal-left { animation: revealLeft 1s ease-out forwards; }
         html { scroll-behavior: smooth; }
       `}</style>
