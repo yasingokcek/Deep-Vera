@@ -13,7 +13,7 @@ interface Props {
 
 const IdentityModal: React.FC<Props> = ({ isOpen, onClose, user, onUpdate }) => {
   const [isGsiLoaded, setIsGsiLoaded] = useState(false);
-  const [activeTab, setActiveTab] = useState<'gmail' | 'company'>('company');
+  const [activeTab, setActiveTab] = useState<'company' | 'gmail'>('company');
   const [companyForm, setCompanyForm] = useState({
     companyName: user?.companyName || '',
     globalPitch: user?.globalPitch || '',
@@ -36,7 +36,7 @@ const IdentityModal: React.FC<Props> = ({ isOpen, onClose, user, onUpdate }) => 
 
   const handleSaveCompany = () => {
     onUpdate(companyForm);
-    alert("Şirket tanıtım ayarları kaydedildi. AI artık bu verileri kullanacak.");
+    alert("Şirket kimliği başarıyla senkronize edildi.");
   };
 
   const handleLinkGmail = () => {
@@ -71,128 +71,201 @@ const IdentityModal: React.FC<Props> = ({ isOpen, onClose, user, onUpdate }) => 
     }
   };
 
+  const completionRate = () => {
+    const fields = [companyForm.companyName, companyForm.globalPitch, companyForm.authorizedPerson, companyForm.companyWebsite];
+    const filled = fields.filter(f => f && f.length > 2).length;
+    return Math.round((filled / fields.length) * 100);
+  };
+
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in">
-      <div className="bg-white w-full max-w-5xl rounded-[4rem] shadow-2xl overflow-hidden flex flex-col h-[85vh] border border-white">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-8 bg-slate-950/40 backdrop-blur-2xl animate-fade-in">
+      <div className="bg-white w-full max-w-6xl rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col h-[90vh] md:h-[85vh] border border-white/50">
         
-        <div className="p-10 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+        {/* Header Section */}
+        <div className="px-10 py-8 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
           <div className="flex items-center gap-5">
-             <div className="w-14 h-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-2xl font-black shadow-xl">⚙️</div>
+             <div className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center text-xl shadow-xl shadow-slate-200">
+                ⚙️
+             </div>
              <div>
-                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Profil & AI Yazım Merkezi</h3>
-                <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.3em] mt-1">Kurumsal Kimlik Yönetimi</p>
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight leading-none">Firma Kimliği & AI Konfigürasyonu</h3>
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2 italic">Hesap Tipi: {user.role?.toUpperCase()}</p>
              </div>
           </div>
-          <button onClick={onClose} className="w-12 h-12 bg-white rounded-xl text-3xl text-slate-300 hover:text-red-500 transition-all flex items-center justify-center shadow-sm">&times;</button>
+          <button onClick={onClose} className="w-12 h-12 bg-slate-50 text-slate-400 rounded-xl hover:bg-red-500 hover:text-white transition-all text-3xl flex items-center justify-center border border-slate-100">&times;</button>
         </div>
 
-        <div className="flex bg-slate-100 p-2 mx-10 mt-6 rounded-3xl shrink-0">
-          <button onClick={() => setActiveTab('company')} className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'company' ? 'bg-white shadow-xl text-slate-900' : 'text-slate-400'}`}>Firma Tanıtım & AI Ayarı</button>
-          <button onClick={() => setActiveTab('gmail')} className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'gmail' ? 'bg-white shadow-xl text-slate-900' : 'text-slate-400'}`}>Gmail Kanalları</button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-10 custom-scrollbar">
-          {activeTab === 'company' ? (
-            <div className="space-y-8 animate-fade-in">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">Şirketinizin Adı</label>
-                  <input 
-                    type="text" value={companyForm.companyName}
-                    onChange={(e) => setCompanyForm({...companyForm, companyName: e.target.value})}
-                    placeholder="Örn: DeepVera Teknoloji"
-                    className="w-full h-14 px-6 bg-slate-50 border border-slate-100 rounded-2xl text-[12px] font-bold outline-none focus:bg-white focus:border-blue-500 transition-all"
-                  />
+        <div className="flex flex-1 overflow-hidden">
+          
+          {/* Sidebar */}
+          <div className="w-72 bg-slate-50/50 border-r border-slate-100 p-8 hidden lg:flex flex-col gap-8 shrink-0">
+            <div className="space-y-4">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Profil Doluluğu</span>
+              <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm">
+                <div className="flex justify-between items-end mb-3">
+                  <span className="text-2xl font-black text-slate-900">%{completionRate()}</span>
+                  <span className="text-[8px] font-black text-emerald-500 uppercase">Hazır</span>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">İletişim Kuracak Yetkili</label>
-                  <input 
-                    type="text" value={companyForm.authorizedPerson}
-                    onChange={(e) => setCompanyForm({...companyForm, authorizedPerson: e.target.value})}
-                    placeholder="Örn: Ahmet Yılmaz"
-                    className="w-full h-14 px-6 bg-slate-50 border border-slate-100 rounded-2xl text-[12px] font-bold outline-none focus:bg-white focus:border-blue-500 transition-all"
-                  />
+                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-500 transition-all duration-700" style={{ width: `${completionRate()}%` }}></div>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">Global Değer Önerisi (Pitch)</label>
-                <textarea 
-                  value={companyForm.globalPitch}
-                  onChange={(e) => setCompanyForm({...companyForm, globalPitch: e.target.value})}
-                  placeholder="Şirketiniz ne yapar? Hangi sorunu çözer? AI bu metni kullanarak e-postaları kişiselleştirir."
-                  className="w-full h-40 p-6 bg-slate-50 border border-slate-100 rounded-[2rem] text-[12px] font-medium leading-relaxed outline-none focus:bg-white focus:border-blue-500 transition-all resize-none shadow-inner"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">Resmi Web Sitesi</label>
-                  <input 
-                    type="text" value={companyForm.companyWebsite}
-                    onChange={(e) => setCompanyForm({...companyForm, companyWebsite: e.target.value})}
-                    className="w-full h-14 px-6 bg-slate-50 border border-slate-100 rounded-2xl text-[12px] font-bold outline-none"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">Ofis Adresi</label>
-                  <input 
-                    type="text" value={companyForm.officialAddress}
-                    onChange={(e) => setCompanyForm({...companyForm, officialAddress: e.target.value})}
-                    className="w-full h-14 px-6 bg-slate-50 border border-slate-100 rounded-2xl text-[12px] font-bold outline-none"
-                  />
-                </div>
-              </div>
-
-              <button 
-                onClick={handleSaveCompany}
-                className="w-full h-16 bg-slate-900 text-white rounded-[2rem] font-black text-[11px] uppercase tracking-[0.3em] shadow-2xl hover:bg-blue-600 transition-all"
-              >
-                AYARLARI VE ŞİRKET KİMLİĞİNİ KAYDET
-              </button>
             </div>
-          ) : (
-            <div className="space-y-12 animate-fade-in">
-              <div className="bg-slate-900 p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 blur-[100px]"></div>
-                <div className="relative z-10 flex justify-between items-center">
-                  <div className="max-w-md">
-                    <h4 className="text-xl font-black uppercase tracking-tighter mb-4">Yeni Kanal Ekle</h4>
-                    <p className="text-sm font-medium text-slate-400 leading-relaxed">Gmail hesabınızı bağlayarak otonom gönderim havuzuna dahil edin.</p>
-                  </div>
-                  <button 
-                    onClick={handleLinkGmail}
-                    disabled={!isGsiLoaded}
-                    className="px-10 py-5 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white hover:text-blue-600 transition-all shadow-xl disabled:opacity-30"
-                  >
-                    GMAIL HESABI BAĞLA
-                  </button>
-                </div>
-              </div>
 
-              <div className="space-y-6">
-                <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-[0.2em]">Aktif Hesaplar ({user.senderAccounts?.length || 0})</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {user.senderAccounts?.map((acc) => (
-                    <div key={acc.id} className="p-6 bg-slate-50 border border-slate-100 rounded-3xl flex items-center justify-between group hover:border-blue-400 transition-all">
-                       <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-2xl shadow-sm">📧</div>
-                          <div className="flex flex-col">
-                             <span className="text-[12px] font-black text-slate-900">{acc.email}</span>
-                             <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mt-1 italic">YETKİ VERİLDİ</span>
-                          </div>
-                       </div>
-                       <button onClick={() => onUpdate({ senderAccounts: user.senderAccounts.filter(a => a.id !== acc.id) })} className="w-10 h-10 flex items-center justify-center text-slate-300 hover:text-red-500 transition-all text-2xl">&times;</button>
+            <nav className="flex flex-col gap-2">
+               <button onClick={() => setActiveTab('company')} className={`px-6 py-4 rounded-xl text-left text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'company' ? 'bg-white shadow-md text-blue-600 border border-slate-100' : 'text-slate-500 hover:bg-white'}`}>
+                  🏢 Firma Kimliği
+               </button>
+               <button onClick={() => setActiveTab('gmail')} className={`px-6 py-4 rounded-xl text-left text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'gmail' ? 'bg-white shadow-md text-blue-600 border border-slate-100' : 'text-slate-500 hover:bg-white'}`}>
+                  📧 Gmail Kanalları
+               </button>
+            </nav>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="flex-1 overflow-y-auto p-8 md:p-14 custom-scrollbar bg-white">
+            <div className="max-w-4xl mx-auto">
+              {activeTab === 'company' ? (
+                <div className="space-y-12 animate-fade-in">
+                  
+                  {/* Firma Bilgileri */}
+                  <div className="space-y-8">
+                    <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
+                      <span className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center text-sm">01</span>
+                      Kurumsal Bilgiler
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-2">
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Firma Adı</label>
+                        <input 
+                          type="text" value={companyForm.companyName}
+                          onChange={(e) => setCompanyForm({...companyForm, companyName: e.target.value})}
+                          className="w-full h-16 px-6 bg-slate-50 border border-slate-200 rounded-2xl text-[13px] font-bold outline-none focus:bg-white focus:border-blue-600 transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Yetkili Kişi</label>
+                        <input 
+                          type="text" value={companyForm.authorizedPerson}
+                          onChange={(e) => setCompanyForm({...companyForm, authorizedPerson: e.target.value})}
+                          className="w-full h-16 px-6 bg-slate-50 border border-slate-200 rounded-2xl text-[13px] font-bold outline-none focus:bg-white focus:border-blue-600 transition-all"
+                        />
+                      </div>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* AI Değer Önerisi */}
+                  <div className="space-y-8">
+                    <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
+                      <span className="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-sm">02</span>
+                      AI Strateji Metni
+                    </h4>
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Değer Öneriniz (Global Pitch)</label>
+                      <textarea 
+                        value={companyForm.globalPitch}
+                        onChange={(e) => setCompanyForm({...companyForm, globalPitch: e.target.value})}
+                        className="w-full h-48 p-8 bg-slate-50 border border-slate-200 rounded-[2.5rem] text-[14px] font-medium leading-relaxed outline-none focus:bg-white focus:border-blue-600 transition-all resize-none shadow-sm"
+                        placeholder="Şirketinizin fark yaratan özelliklerini yazın..."
+                      />
+                    </div>
+                  </div>
+
+                  {/* Dijital Adresler */}
+                  <div className="space-y-8">
+                    <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
+                      <span className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center text-sm">03</span>
+                      İletişim Kanalları
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-2">
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Web Sitesi</label>
+                        <input 
+                          type="text" value={companyForm.companyWebsite}
+                          onChange={(e) => setCompanyForm({...companyForm, companyWebsite: e.target.value})}
+                          className="w-full h-16 px-6 bg-slate-50 border border-slate-200 rounded-2xl text-[13px] font-bold outline-none focus:bg-white focus:border-blue-600 transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Ofis Adresi</label>
+                        <input 
+                          type="text" value={companyForm.officialAddress}
+                          onChange={(e) => setCompanyForm({...companyForm, officialAddress: e.target.value})}
+                          className="w-full h-16 px-6 bg-slate-50 border border-slate-200 rounded-2xl text-[13px] font-bold outline-none focus:bg-white focus:border-blue-600 transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-12 animate-fade-in">
+                  <div className="bg-slate-900 p-12 rounded-[3.5rem] text-white shadow-2xl">
+                    <h4 className="text-2xl font-black uppercase tracking-tight mb-6 flex items-center gap-4">
+                       Gmail Entegrasyonu
+                       <span className="px-4 py-1.5 bg-blue-600 text-[10px] rounded-full">Güvenli Bağlantı</span>
+                    </h4>
+                    <p className="text-slate-400 text-sm font-medium leading-relaxed mb-10 max-w-lg">
+                      DeepVera otonom ajanlarının sizin adınıza e-posta gönderebilmesi için kurumsal Gmail hesaplarınızı sisteme bağlayın.
+                    </p>
+                    <button 
+                      onClick={handleLinkGmail}
+                      disabled={!isGsiLoaded}
+                      className="px-12 py-6 bg-white text-slate-900 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-2xl disabled:opacity-30"
+                    >
+                      YENİ GMAIL KANALI BAĞLA ➔
+                    </button>
+                  </div>
+
+                  <div className="space-y-6">
+                    <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-widest">Bağlı Gönderim Kanalları ({user.senderAccounts?.length || 0})</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {user.senderAccounts?.length === 0 ? (
+                         <div className="col-span-2 py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[3rem] text-center flex flex-col items-center">
+                            <span className="text-4xl mb-4 opacity-20">📧</span>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bağlı kanal bulunamadı</span>
+                         </div>
+                      ) : user.senderAccounts?.map((acc) => (
+                        <div key={acc.id} className="p-8 bg-white border border-slate-100 rounded-[2.2rem] flex items-center justify-between group hover:border-blue-500 hover:shadow-xl transition-all shadow-sm">
+                           <div className="flex items-center gap-5">
+                              <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 group-hover:bg-blue-50 transition-colors">
+                                 <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" className="w-6 h-6" alt="Gmail" />
+                              </div>
+                              <div className="flex flex-col min-w-0">
+                                 <span className="text-[13px] font-black text-slate-900 truncate">{acc.email}</span>
+                                 <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-1">Aktif_Kanal</span>
+                              </div>
+                           </div>
+                           <button 
+                             onClick={() => onUpdate({ senderAccounts: user.senderAccounts.filter(a => a.id !== acc.id) })} 
+                             className="w-10 h-10 flex items-center justify-center text-slate-300 hover:text-white hover:bg-red-500 rounded-xl transition-all"
+                           >
+                             &times;
+                           </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
-        <div className="p-10 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0">
-           <button onClick={onClose} className="px-16 py-6 bg-slate-900 text-white rounded-[2.5rem] font-black text-[12px] uppercase tracking-[0.3em] shadow-2xl hover:bg-blue-600 transition-all active:scale-95">AYARLARI KAPAT</button>
+        {/* Action Footer */}
+        <div className="px-12 py-10 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-5 shrink-0">
+           <button 
+             onClick={onClose} 
+             className="px-12 py-6 bg-white text-slate-600 border border-slate-200 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-100 transition-all"
+           >
+             Kapat
+           </button>
+           <button 
+             onClick={handleSaveCompany} 
+             className="px-16 py-6 bg-slate-900 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] shadow-2xl hover:bg-blue-600 transition-all flex items-center gap-4"
+           >
+             DEĞİŞİKLİKLERİ KAYDET <span className="text-base">⚡</span>
+           </button>
         </div>
       </div>
     </div>
